@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('phone');
             $table->date('date_incorporation');
             $table->timestamps();
+            $table->string('deleted_at')->nullable();
         });
     }
 

@@ -4,7 +4,8 @@ CREATE TABLE `company` (
   `address` varchar(100),
   `phone_number` int(15),
   `email` varchar(50),
-  `date_incorporation` date
+  `date_incorporation` date,
+  `deleted_at` varchar(20),
 );
 
 CREATE TABLE `work_room` (
@@ -12,7 +13,8 @@ CREATE TABLE `work_room` (
   `name` varchar(100),
   `location` varchar(255),
   `created_at` datetime,
-  `updated_at` datetime
+  `updated_at` datetime,
+  `deleted_at` varchar(20),
 );
 
 CREATE TABLE `member` (
@@ -27,7 +29,8 @@ CREATE TABLE `member` (
   `date_left_company` datetime,
   `company_id` int,
   `created_at` datetime,
-  `updated_at` datetime
+  `updated_at` datetime,
+  `deleted_at` varchar(20),
 );
 ALTER TABLE `member` ADD FOREIGN KEY (`company_id`) REFERENCES `company` (`id`);
 
@@ -39,7 +42,8 @@ CREATE TABLE `project` (
   `company_id` int,
   `work_room_id` int,
   `created_at` datetime,
-  `updated_at` datetime
+  `updated_at` datetime,
+  `deleted_at` varchar(20),
 );
 ALTER TABLE `project` ADD FOREIGN KEY (`company_id`) REFERENCES `company` (`id`);
 ALTER TABLE `project` ADD FOREIGN KEY (`work_room_id`) REFERENCES `work_room` (`id`);
@@ -51,7 +55,8 @@ CREATE TABLE `member_project` (
   `time_member_join` varchar(20),
   `time_member_complted` varchar(20),
   `created_at` datetime,
-  `updated_at` datetime
+  `updated_at` datetime,
+  `deleted_at` varchar(20),
 );
 ALTER TABLE `member_project` ADD CONSTRAINT `pk_member_project` PRIMARY KEY (`project_id`, `member_id`);
 ALTER TABLE `member_project` ADD FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
@@ -63,7 +68,8 @@ CREATE TABLE `training` (
   `content` text(200),
   `project_id` int,
   `created_at` datetime,
-  `updated_at` datetime
+  `updated_at` datetime,
+  `deleted_at` varchar(20),
 );
 ALTER TABLE `training` ADD FOREIGN KEY (`trainer`) REFERENCES `member` (`id`);
 ALTER TABLE `training` ADD FOREIGN KEY (`project_id`) REFERENCES `project` (`id`);
@@ -74,7 +80,8 @@ CREATE TABLE `training_room` (
   `date_start` datetime,
   `date_completed` datetime,
   `result` varchar(20),
-  `note` text(500)
+  `note` text(500),
+  `deleted_at` varchar(20),
 );
 ALTER TABLE `training_room` ADD CONSTRAINT `pk_training_room` PRIMARY KEY (`training_id`, `member_id`);
 ALTER TABLE `training_room` ADD FOREIGN KEY (`training_id`) REFERENCES `training` (`id`);
@@ -90,7 +97,8 @@ CREATE TABLE `device` (
   `update_win` datetime,
   `member_id` int,
   `created_at` datetime,
-  `updated_at` datetime
+  `updated_at` datetime,
+  `deleted_at` varchar(20),
 );
 ALTER TABLE `device` ADD FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 
@@ -100,7 +108,8 @@ CREATE TABLE `carbinet` (
   `work_room_id` int,
   `member_id` int,
   `created_at` datetime,
-  `updated_at` datetime
+  `updated_at` datetime,
+  `deleted_at` varchar(20),
 );
 ALTER TABLE `carbinet` ADD FOREIGN KEY (`work_room_id`) REFERENCES `work_room` (`id`);
 ALTER TABLE `carbinet` ADD FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);

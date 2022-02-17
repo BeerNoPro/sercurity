@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('result');
             $table->text('note');
             $table->timestamps();
+            $table->string('deleted_at')->nullable();
             $table->primary(['training_id', 'member_id']);
             $table->foreign('training_id')->references('id')->on('training');
             $table->foreign('member_id')->references('id')->on('member');

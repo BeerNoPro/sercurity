@@ -18,9 +18,10 @@ return new class extends Migration
             $table->unsignedBigInteger('member_id')->nullable();
             $table->unsignedBigInteger('project_id')->nullable();
             $table->string('role');
-            $table->string('time_member_join');
-            $table->string('time_member_completed');
+            $table->date('time_member_join');
+            $table->date('time_member_completed');
             $table->timestamps();
+            $table->string('deleted_at')->nullable();
             $table->primary(['member_id', 'project_id']);
             $table->foreign('member_id')->references('id')->on('member');
             $table->foreign('project_id')->references('id')->on('project');

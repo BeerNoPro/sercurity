@@ -19,6 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('work_room_id')->nullable();
             $table->unsignedBigInteger('member_id')->nullable();
             $table->timestamps();
+            $table->string('deleted_at')->nullable();
             $table->foreign('work_room_id')->references('id')->on('work_room');
             $table->foreign('member_id')->references('id')->on('member');
         });

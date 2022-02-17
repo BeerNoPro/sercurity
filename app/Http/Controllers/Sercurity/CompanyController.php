@@ -110,15 +110,25 @@ class CompanyController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $company = Company::find($id);
+        $data = Company::find($id);
+        if ($data) {
+            $check = Company::where('name', $request->name)
+                        ->where('address', $request->address)
+                        ->count();
+            if ($check > 0) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Company already exists.',
+                ]);
+            } else {
+                $data->update($request->all());
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Company updated successfully.',
+                    'data' => $data,
+                ]);
+            }
 
-        if ($company) {
-            $company->update($request->all());
-            return response()->json([
-                'status' => 200,
-                'message' => 'Company updated successfully.',
-                'data' => $company
-            ]);
         } else {
             return response()->json([
                 'status' => 404,
@@ -152,7 +162,7 @@ class CompanyController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Search the specified resource from storage.
      *
      * @param  int  $name
      * @return \Illuminate\Http\Response

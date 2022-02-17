@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('update_win');
             $table->unsignedBigInteger('member_id')->nullable();
             $table->timestamps();
+            $table->string('deleted_at')->nullable();
             $table->foreign('member_id')->references('id')->on('member');
         });
     }

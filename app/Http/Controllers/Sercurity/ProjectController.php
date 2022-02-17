@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Sercurity;
 
 use App\Http\Controllers\Controller;
-use App\Models\Sercurity\WorkRoom;
+use App\Models\Sercurity\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-class WorkRoomController extends Controller
+class ProjectController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,18 +16,18 @@ class WorkRoomController extends Controller
      */
     public function index()
     {
-        $data = WorkRoom::all();
+        $data = Project::all();
         if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Work room list',
+                'message' => 'Project list',
                 'data' => $data
             ]);
 
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Work room not found'
+                'message' => 'Project not found'
             ]);
         }
     }
@@ -41,60 +41,47 @@ class WorkRoomController extends Controller
     public function store(Request $request)
     {
         // check record exists in database?
-        $check = WorkRoom::where('name', $request->name)
-                        ->where('location', $request->location)
+        $check = Project::where('name', $request->name)
+                        ->where('company_id', $request->company_id)
+                        ->where('work_room_id', $request->work_room_id)
                         ->count();
 
         if($check > 0 ) { 
             return response()->json([
                 'status' => 400,
-                'message' => 'Work room already exists.'
+                'message' => 'Project already exists.'
             ]);
-
         } else { 
             $input = $request->all();
             $validator = Validator::make($input, [
                 'name' => 'required',
-                'location' => 'required',
+                'time_start' => 'required',
+                'time_completed' => 'required',
+                'company_id' => '',
+                'work_room_id' => '',
             ]);
-    
             if($validator->fails()){ 
                 return response()->json([
                     'status' => 400,
                     'message' => 'Please fill out the information completely',
                     'error' => $validator->errors()
                 ]);
+            } else {
+                if (is_null($request->company_id) || is_null($request->work_room_id)) {
+                    return response()->json([
+                        'status' => 404,
+                        'message' => 'Check registered company or work room, please!',
+                    ]);
+                } else {
+                    $data = Project::create($input);
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Project created successfully.',
+                        'data' => $data
+                    ]);
+                }
             }
-            $data = WorkRoom::create($input);
-    
-            return response()->json([
-                'status' => 200,
-                'message' => 'Work room created successfully.',
-                'data' => $data
-            ]);
         }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        $data = WorkRoom::find($id);
-        if (is_null($data)) {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Work room not found.'
-            ]);
-        }
-        return response()->json([
-            'status' => 200,
-            'message' => 'Work room retrieved successfully.',
-            'data' => $data
-        ]);
     }
 
     /**
@@ -106,21 +93,23 @@ class WorkRoomController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $data = WorkRoom::find($id);
+        $data = Project::find($id);
         if ($data) {
-            $check = WorkRoom::where('name', $request->name)
-                        ->where('location', $request->location)
-                        ->count();
+            // check record exists in database?
+            $check = Project::where('name', $request->name)
+                            // ->where('company_id', $request->company_id)
+                            // ->where('work_room_id', $request->work_room_id)
+                            ->count();
             if ($check > 0) {
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Work room already exists.',
+                    'message' => 'Project already exists.',
                 ]);
             } else {
                 $data->update($request->all());
                 return response()->json([
                     'status' => 200,
-                    'message' => 'Work room updated successfully.',
+                    'message' => 'Project updated successfully.',
                     'data' => $data,
                 ]);
             }
@@ -128,7 +117,7 @@ class WorkRoomController extends Controller
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Work room update fail'
+                'message' => 'Project update fail'
             ]);
         }
     }
@@ -141,17 +130,17 @@ class WorkRoomController extends Controller
      */
     public function destroy($id)
     {
-        $data = WorkRoom::find($id); 
+        $data = Project::find($id); 
         if ($data) {
             $data->delete($id);
             return response()->json([
                 'status' => 200,
-                'message' => 'Work room deleted successfully.'
+                'message' => 'Project deleted successfully.'
             ]);
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Work room deleted faile'
+                'message' => 'Project deleted fail'
             ]);
         }
     }
@@ -164,17 +153,17 @@ class WorkRoomController extends Controller
      */
     public function search($name)
     {
-        $data = WorkRoom::where('name','like','%'.$name.'%')->get();
+        $data = Project::where('name','like','%'.$name.'%')->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Work room detail',
+                'message' => 'Project detail',
                 'data' => $data
             ]);
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Work room not found'
+                'message' => 'Project not found'
             ]);
         }
     }

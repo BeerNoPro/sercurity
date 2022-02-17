@@ -19,6 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('project_id')->nullable();
             $table->string('content');
             $table->timestamps();
+            $table->string('deleted_at')->nullable();
             $table->foreign('trainer')->references('id')->on('member');
             $table->foreign('project_id')->references('id')->on('project');
         });
