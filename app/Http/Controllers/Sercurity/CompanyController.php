@@ -194,4 +194,35 @@ class CompanyController extends Controller
             ]);
         }
     }
+
+    /**
+     * Search the specified resource from storage.
+     *
+     * @param  int  $name
+     * @return \Illuminate\Http\Response
+     */
+    public function restore($id)
+    {
+        $data = Company::where('id', $id)
+                    ->get();
+        if ($data->isNotEmpty()) {
+            $restore = Company::where('deleted_at', 1)->update(['deleted_at' => null]);
+            if ($restore) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Company restore success',
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Company not found.',
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Company not found.'
+            ]);
+        }
+    }
 }

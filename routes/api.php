@@ -27,6 +27,7 @@ Route::prefix('admin')->group(function () {
     // List route company
     Route::resource('/company', CompanyController::class);
     Route::get('/company/search/{name}', [CompanyController::class, 'search']);
+    Route::post('/company/restore/{id}', [CompanyController::class, 'restore']);
 
     // List route work room
     Route::resource('/work-room', WorkRoomController::class);
