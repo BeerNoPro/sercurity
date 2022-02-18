@@ -19,5 +19,6 @@ class Device extends Model
         'version_virus',
         'update_win',
         'member_id',
+        'deleted_at'
     ];
 }

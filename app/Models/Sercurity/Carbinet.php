@@ -15,5 +15,6 @@ class Carbinet extends Model
         'name',
         'work_room_id',
         'member_id',
+        'deleted_at'
     ];
 }

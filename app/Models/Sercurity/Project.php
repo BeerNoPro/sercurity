@@ -17,5 +17,6 @@ class Project extends Model
         'time_completed',
         'company_id',
         'work_room_id',
+        'deleted_at'
     ];
 }

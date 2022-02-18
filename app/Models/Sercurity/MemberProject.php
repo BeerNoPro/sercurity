@@ -17,5 +17,6 @@ class MemberProject extends Model
         'role',
         'time_member_join',
         'time_member_completed',
+        'deleted_at'
     ];
 }

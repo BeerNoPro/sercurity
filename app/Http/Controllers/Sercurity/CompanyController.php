@@ -43,6 +43,7 @@ class CompanyController extends Controller
         // check record exists in database?
         $check = Company::where('name', $request->name)
                         ->where('address', $request->address)
+                        ->where('email', $request->email)
                         ->count();
         
         if ($check > 0) {
@@ -114,6 +115,7 @@ class CompanyController extends Controller
         if ($data) {
             $check = Company::where('name', $request->name)
                         ->where('address', $request->address)
+                        ->where('email', $request->email)
                         ->count();
             if ($check > 0) {
                 return response()->json([
@@ -135,7 +137,6 @@ class CompanyController extends Controller
                 'message' => 'Company update fail'
             ]);
         }
-
     }
 
     /**
@@ -148,15 +149,23 @@ class CompanyController extends Controller
     {
         $company = Company::find($id); 
         if ($company) {
-            $company->delete($id);
-            return response()->json([
-                'status' => 200,
-                'message' => 'Company deleted successfully.'
-            ]);
+            $data = Company::where('id', $id)
+                        ->update(['deleted_at' => 1]);
+            if ($data) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Company deleted successfully.',
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Company deleted fail.'
+                ]);
+            }
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Company deleted faile'
+                'message' => 'Company deleted fail.'
             ]);
         }
     }
@@ -169,7 +178,9 @@ class CompanyController extends Controller
      */
     public function search($name)
     {
-        $data = Company::where('name','like','%'.$name.'%')->get();
+        $data = Company::where('name','like','%'.$name.'%')
+                    ->whereNull('deleted_at')
+                    ->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,

@@ -78,26 +78,6 @@ class MemberProjectController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    // public function save(Request $request, $project_id, $member_id)
-    // {
-    //     $data = MemberProject::where('project_id', $project_id)
-    //                             ->where('member_id', $member_id)
-    //                             ->get();
-    //     if ($data->isNotEmpty()) {
-    //         MemberProject::where('project_id', $project_id)
-    //                             ->where('member_id', $member_id)
-    //                             ->update(['role' => $request->role]);
-    //         return response()->json([
-    //             'status' => 200,
-    //             'message' => 'Member project updated successfully.',
-    //         ]);
-    //     } else {
-    //         return response()->json([
-    //             'status' => 404,
-    //             'message' => 'Member project update fail.'
-    //         ]);
-    //     }
-    // }
     public function save(Request $request)
     {
         $project_id = $request->project_id;
@@ -106,13 +86,20 @@ class MemberProjectController extends Controller
                                 ->where('member_id', $member_id)
                                 ->get();
         if ($data->isNotEmpty()) {
-            MemberProject::where('project_id', $project_id)
+            $data = MemberProject::where('project_id', $project_id)
                                 ->where('member_id', $member_id)
                                 ->update(['role' => $request->role]);
-            return response()->json([
-                'status' => 200,
-                'message' => 'Member project updated successfully.',
-            ]);
+            if ($data) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Member project updated successfully.',
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Member project update fail.'
+                ]);
+            }
         } else {
             return response()->json([
                 'status' => 404,
@@ -135,13 +122,20 @@ class MemberProjectController extends Controller
                                 ->where('member_id', $member_id)
                                 ->get();
         if ($data->isNotEmpty()) {
-            MemberProject::where('project_id', $project_id)
+            $data = MemberProject::where('project_id', $project_id)
                                 ->where('member_id', $member_id)
                                 ->update(['deleted_at' => 1]);
-            return response()->json([
-                'status' => 200,
-                'message' => 'Member project deleted successfully.',
-            ]);
+            if ($data) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Member project deleted successfully.',
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Member project deleted fail.'
+                ]);
+            }
         } else {
             return response()->json([
                 'status' => 404,

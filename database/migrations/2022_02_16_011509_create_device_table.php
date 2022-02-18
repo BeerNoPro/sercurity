@@ -16,11 +16,11 @@ return new class extends Migration
         Schema::create('device', function (Blueprint $table) {
             $table->id();
             $table->string('ip_address');
-            $table->string('ip_mac');
+            $table->string('ip_mac')->nullable();
             $table->string('user_login');
-            $table->string('version_win');
+            $table->string('version_win')->nullable();
             $table->string('version_virus');
-            $table->string('update_win');
+            $table->string('update_win')->nullable();
             $table->unsignedBigInteger('member_id')->nullable();
             $table->timestamps();
             $table->string('deleted_at')->nullable();

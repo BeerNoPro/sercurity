@@ -20,6 +20,7 @@ class Member extends Model
         'work_position',
         'date_join_company',
         'date_left_company',
-        'company_id'
+        'company_id',
+        'deleted_at'
     ];
 }

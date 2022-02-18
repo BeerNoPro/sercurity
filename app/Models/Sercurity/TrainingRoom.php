@@ -18,5 +18,6 @@ class TrainingRoom extends Model
         'date_completed',
         'result',
         'note',
+        'deleted_at'
     ];
 }

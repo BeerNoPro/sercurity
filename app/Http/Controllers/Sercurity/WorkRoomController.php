@@ -143,15 +143,22 @@ class WorkRoomController extends Controller
     {
         $data = WorkRoom::find($id); 
         if ($data) {
-            $data->delete($id);
-            return response()->json([
-                'status' => 200,
-                'message' => 'Work room deleted successfully.'
-            ]);
+            $data = WorkRoom::where('id', $id)->update(['deleted_at' => 1]);
+            if ($data) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Work room deleted successfully.'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Work room deleted fail.'
+                ]);
+            }
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Work room deleted faile'
+                'message' => 'Work room deleted fail.'
             ]);
         }
     }
@@ -164,7 +171,9 @@ class WorkRoomController extends Controller
      */
     public function search($name)
     {
-        $data = WorkRoom::where('name','like','%'.$name.'%')->get();
+        $data = WorkRoom::where('name','like','%'.$name.'%')
+                    ->whereNull('deleted_at')
+                    ->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,

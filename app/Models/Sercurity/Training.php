@@ -13,7 +13,8 @@ class Training extends Model
 
     protected $fillable = [
         'trainer',
-        'content',
         'project_id',
+        'content',
+        'deleted_at'
     ];
 }

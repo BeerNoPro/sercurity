@@ -16,6 +16,7 @@ class Company extends Model
         'address',
         'email',
         'phone',
-        'date_incorporation'
+        'date_incorporation',
+        'deleted_at'
     ];
 }

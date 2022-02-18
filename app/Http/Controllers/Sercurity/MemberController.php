@@ -43,9 +43,11 @@ class MemberController extends Controller
         // check record exists in database?
         $check = Member::where('name', $request->name)
                         ->where('email', $request->email)
+                        ->where('address', $request->address)
+                        ->where('date_join_company', $request->date_join_company)
                         ->count();
 
-        if($check > 0 ) { 
+        if($check > 0 ) {
             return response()->json([
                 'status' => 400,
                 'message' => 'Member already exists.'
@@ -98,8 +100,11 @@ class MemberController extends Controller
     {
         $data = Member::find($id);
         if ($data) {
+            // check record exists in database?
             $check = Member::where('name', $request->name)
                         ->where('email', $request->email)
+                        ->where('address', $request->address)
+                        ->where('date_join_company', $request->date_join_company)
                         ->count();
             if ($check > 0) {
                 return response()->json([
@@ -114,7 +119,6 @@ class MemberController extends Controller
                     'data' => $data,
                 ]);
             }
-
         } else {
             return response()->json([
                 'status' => 404,
@@ -133,11 +137,18 @@ class MemberController extends Controller
     {
         $data = Member::find($id); 
         if ($data) {
-            $data->delete($id);
-            return response()->json([
-                'status' => 200,
-                'message' => 'Member deleted successfully.'
-            ]);
+            $data = Member::where('id', $id)->update(['deleted_at' => 1]);
+            if ($data) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Member deleted successfully.'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Member deleted fail'
+                ]);
+            }
         } else {
             return response()->json([
                 'status' => 404,
@@ -154,7 +165,9 @@ class MemberController extends Controller
      */
     public function search($name)
     {
-        $data = Member::where('name','like','%'.$name.'%')->get();
+        $data = Member::where('name','like','%'.$name.'%')
+                    ->whereNull('deleted_at')
+                    ->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,

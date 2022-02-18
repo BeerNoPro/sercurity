@@ -42,10 +42,10 @@ class ProjectController extends Controller
     {
         // check record exists in database?
         $check = Project::where('name', $request->name)
+                        ->where('time_start', $request->time_start)
                         ->where('company_id', $request->company_id)
                         ->where('work_room_id', $request->work_room_id)
                         ->count();
-
         if($check > 0 ) { 
             return response()->json([
                 'status' => 400,
@@ -97,8 +97,8 @@ class ProjectController extends Controller
         if ($data) {
             // check record exists in database?
             $check = Project::where('name', $request->name)
-                            // ->where('company_id', $request->company_id)
-                            // ->where('work_room_id', $request->work_room_id)
+                            ->where('company_id', $request->company_id)
+                            ->where('work_room_id', $request->work_room_id)
                             ->count();
             if ($check > 0) {
                 return response()->json([
@@ -132,11 +132,19 @@ class ProjectController extends Controller
     {
         $data = Project::find($id); 
         if ($data) {
-            $data->delete($id);
-            return response()->json([
-                'status' => 200,
-                'message' => 'Project deleted successfully.'
-            ]);
+            // $data->delete($id);
+            $data = Project::where('id', $id)->update(['deleted_at' => 1]);
+            if ($data) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Project deleted successfully.'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Project deleted fail'
+                ]);
+            }
         } else {
             return response()->json([
                 'status' => 404,
@@ -153,7 +161,9 @@ class ProjectController extends Controller
      */
     public function search($name)
     {
-        $data = Project::where('name','like','%'.$name.'%')->get();
+        $data = Project::where('name','like','%'.$name.'%')
+                    ->whereNull('deleted_at')
+                    ->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,

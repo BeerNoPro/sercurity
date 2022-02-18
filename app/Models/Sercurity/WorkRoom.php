@@ -13,6 +13,7 @@ class WorkRoom extends Model
 
     protected $fillable = [
         'name',
-        'location'
+        'location',
+        'deleted_at'
     ];
 }
