@@ -147,4 +147,38 @@ class TrainingRoomController extends Controller
             ]);
         }
     }
+
+    /**
+     * Restore the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function restore(Request $request)
+    {
+        $data = TrainingRoom::where('training_id', $request->training_id)
+                    ->where('member_id', $request->member_id)
+                    ->get();
+        if ($data) {
+            $restore = TrainingRoom::where('training_id', $request->training_id)
+                                ->where('member_id', $request->member_id)
+                                ->update(['deleted_at' => null]);
+            if ($restore) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Training room restore success',
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Training room not found.',
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Training room not found.'
+            ]);
+        }
+    }
 }

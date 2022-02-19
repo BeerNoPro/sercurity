@@ -187,4 +187,35 @@ class WorkRoomController extends Controller
             ]);
         }
     }
+
+    /**
+     * Restore the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function restore($id)
+    {
+        $data = WorkRoom::where('id', $id)
+                    ->get();
+        if ($data->isNotEmpty()) {
+            $restore = WorkRoom::where('deleted_at', 1)->update(['deleted_at' => null]);
+            if ($restore) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Work room restore success',
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Work room not found.',
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Work room not found.'
+            ]);
+        }
+    }
 }

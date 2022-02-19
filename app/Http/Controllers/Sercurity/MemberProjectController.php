@@ -143,4 +143,38 @@ class MemberProjectController extends Controller
             ]);
         }
     }
+
+    /**
+     * Restore the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function restore(Request $request)
+    {
+        $data = MemberProject::where('member_id', $request->member_id)
+                    ->where('project_id', $request->project_id)
+                    ->get();
+        if ($data) {
+            $restore = MemberProject::where('member_id', $request->member_id)
+                                ->where('project_id', $request->project_id)
+                                ->update(['deleted_at' => null]);
+            if ($restore) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Member project restore success',
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Member project not found.',
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Member project not found.'
+            ]);
+        }
+    }
 }

@@ -196,9 +196,9 @@ class CompanyController extends Controller
     }
 
     /**
-     * Search the specified resource from storage.
+     * Restore the specified resource from storage.
      *
-     * @param  int  $name
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function restore($id)

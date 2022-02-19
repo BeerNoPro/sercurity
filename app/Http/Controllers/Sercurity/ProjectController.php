@@ -177,4 +177,35 @@ class ProjectController extends Controller
             ]);
         }
     }
+
+    /**
+     * Restore the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function restore($id)
+    {
+        $data = Project::where('id', $id)
+                    ->get();
+        if ($data->isNotEmpty()) {
+            $restore = Project::where('deleted_at', 1)->update(['deleted_at' => null]);
+            if ($restore) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Project restore success',
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Project not found.',
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Project not found.'
+            ]);
+        }
+    }
 }

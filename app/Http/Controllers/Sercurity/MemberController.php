@@ -181,4 +181,35 @@ class MemberController extends Controller
             ]);
         }
     }
+
+    /**
+     * Restore the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function restore($id)
+    {
+        $data = Member::where('id', $id)
+                    ->get();
+        if ($data->isNotEmpty()) {
+            $restore = Member::where('deleted_at', 1)->update(['deleted_at' => null]);
+            if ($restore) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Member restore success',
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Member not found.',
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Member not found.'
+            ]);
+        }
+    }
 }

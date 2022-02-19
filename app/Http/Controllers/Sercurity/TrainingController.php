@@ -173,4 +173,35 @@ class TrainingController extends Controller
             ]);
         }
     }
+
+    /**
+     * Restore the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function restore($id)
+    {
+        $data = Training::where('id', $id)
+                    ->get();
+        if ($data->isNotEmpty()) {
+            $restore = Training::where('deleted_at', 1)->update(['deleted_at' => null]);
+            if ($restore) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Training restore success',
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Training not found.',
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Training not found.'
+            ]);
+        }
+    }
 }
