@@ -20,14 +20,13 @@ class DeviceController extends Controller
         if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Device list',
+                'message' => 'Devices content list.',
                 'data' => $data
             ]);
-
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Device not found'
+                'message' => 'Device content not found.'
             ]);
         }
     }
@@ -40,6 +39,7 @@ class DeviceController extends Controller
      */
     public function store(Request $request)
     {
+        $data = $request->all();
         // check record exists in database?
         $check = Device::where('ip_address', $request->ip_address)
                         ->where('ip_mac', $request->ip_mac)
@@ -48,24 +48,21 @@ class DeviceController extends Controller
                         ->count();
         if($check > 0 ) { 
             return response()->json([
-                'status' => 400,
-                'message' => 'Device already exists.',
+                'status' => 200,
+                'message' => 'Device content created successfully.',
+                'data' => $data
             ]);
         } else { 
-            $input = $request->all();
-            $validator = Validator::make($input, [
+            $validator = Validator::make($data, [
                 'ip_address' => 'required',
-                'ip_mac' => '',
                 'user_login' => 'required',
-                'version_win' => '',
                 'version_virus' => 'required',
-                'update_win' => '',
                 'member_id' => 'required',
             ]);
             if($validator->fails()){ 
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Please fill out the information completely',
+                    'message' => 'Please fill out the information completely.',
                     'error' => $validator->errors()
                 ]);
             } else {
@@ -75,15 +72,44 @@ class DeviceController extends Controller
                         'message' => 'Member not found. Register member please!',
                     ]);
                 } else {
-                    $data = Device::create($input);
-                    return response()->json([
-                        'status' => 200,
-                        'message' => 'Device content created successfully.',
-                        'data' => $data
-                    ]);
+                    $data = Device::create($data);
+                    if ($data) {
+                        return response()->json([
+                            'status' => 200,
+                            'message' => 'Device content created successfully.',
+                            'data' => $data
+                        ]);
+                    } else {
+                        return response()->json([
+                            'status' => 400,
+                            'message' => 'Device content created fail.',
+                        ]);
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Show the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $data = Device::find($id);
+        if (is_null($data)) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Device content not found.'
+            ]);
+        }
+        return response()->json([
+            'status' => 200,
+            'message' => 'Device content detail.',
+            'data' => $data
+        ]);
     }
 
     /**
@@ -104,51 +130,29 @@ class DeviceController extends Controller
                             ->count();
             if ($check > 0) {
                 return response()->json([
-                    'status' => 400,
-                    'message' => 'Device already exists.',
-                ]);
-            } else {
-                $data->update($request->all());
-                return response()->json([
                     'status' => 200,
                     'message' => 'Device updated successfully.',
-                    'data' => $data,
-                ]);
-            }
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Device content update fail.'
-            ]);
-        }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $data = Device::find($id); 
-        if ($data) {
-            $data = Device::where('id', $id)->update(['deleted_at' => 1]);
-            if ($data) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Device content deleted successfully.'
+                    'data' => $data
                 ]);
             } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Device content deleted fail'
-                ]);
+                $result = $data->update($request->all());
+                if ($result) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Device updated successfully.',
+                        'data' => $data
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Device updated fail.'
+                    ]);
+                }
             }
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Device content deleted fail'
+                'message' => 'Device content not found.'
             ]);
         }
     }
@@ -161,50 +165,17 @@ class DeviceController extends Controller
      */
     public function search($user_login)
     {
-        $data = Device::where('user_login','like','%'.$user_login.'%')
-                        ->whereNull('deleted_at')
-                        ->get();
+        $data = Device::where('user_login','like','%'.$user_login.'%')->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Device content detail',
+                'message' => 'Device content detail.',
                 'data' => $data
             ]);
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Device not found.',
-            ]);
-        }
-    }
-
-    /**
-     * Restore the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function restore($id)
-    {
-        $data = Device::where('id', $id)
-                    ->get();
-        if ($data->isNotEmpty()) {
-            $restore = Device::where('deleted_at', 1)->update(['deleted_at' => null]);
-            if ($restore) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Device restore success',
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Device not found.',
-                ]);
-            }
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Device not found.'
+                'message' => 'Device content not found.',
             ]);
         }
     }

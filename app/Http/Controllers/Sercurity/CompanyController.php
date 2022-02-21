@@ -20,14 +20,13 @@ class CompanyController extends Controller
         if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Company list',
+                'message' => 'Companies list.',
                 'data' => $data
             ]);
-
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Company not found'
+                'message' => 'Company not found.'
             ]);
         }
     }
@@ -40,48 +39,51 @@ class CompanyController extends Controller
      */
     public function store(Request $request)
     {
+        $data = $request->all();
         // check record exists in database?
         $check = Company::where('name', $request->name)
                         ->where('address', $request->address)
                         ->where('email', $request->email)
                         ->count();
-        
         if ($check > 0) {
             return response()->json([
-                'status' => 400,
-                'message' => 'Company already exists.'
+                'status' => 200,
+                'message' => 'Company created successfully.',
+                'data' => $data
             ]);
-            
         } else {
-            $input = $request->all();
-            $validator = Validator::make($input, [
+            $validator = Validator::make($data, [
                 'name' => 'required',
                 'address' => 'required',
                 'email' => 'required',
                 'phone' => 'required',
                 'date_incorporation' => 'required',
             ]);
-    
             if($validator->fails()){ 
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Please fill out the information completely',
+                    'message' => 'Please fill out the information completely.',
                     'error' => $validator->errors()
                 ]);
             }
-            $data = Company::create($input);
-    
-            return response()->json([
-                'status' => 200,
-                'message' => 'Company created successfully.',
-                'data' => $data
-            ]);
+            $data = Company::create($data);
+            if ($data) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Company created successfully.',
+                    'data' => $data
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Company created fail.'
+                ]);
+            }
         }
-
     }
 
     /**
-     * Display the specified resource.
+     * Show the specified resource.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -97,7 +99,7 @@ class CompanyController extends Controller
         }
         return response()->json([
             'status' => 200,
-            'message' => 'Company retrieved successfully.',
+            'message' => 'Company content detail.',
             'data' => $data
         ]);
     }
@@ -113,59 +115,23 @@ class CompanyController extends Controller
     {
         $data = Company::find($id);
         if ($data) {
-            $check = Company::where('name', $request->name)
-                        ->where('address', $request->address)
-                        ->where('email', $request->email)
-                        ->count();
-            if ($check > 0) {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Company already exists.',
-                ]);
-            } else {
-                $data->update($request->all());
+            $result = $data->update($request->all());
+            if ($result) {
                 return response()->json([
                     'status' => 200,
                     'message' => 'Company updated successfully.',
                     'data' => $data,
                 ]);
-            }
-
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Company update fail'
-            ]);
-        }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $company = Company::find($id); 
-        if ($company) {
-            $data = Company::where('id', $id)
-                        ->update(['deleted_at' => 1]);
-            if ($data) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Company deleted successfully.',
-                ]);
             } else {
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Company deleted fail.'
+                    'message' => 'Company updated fail.',
                 ]);
             }
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Company deleted fail.'
+                'message' => 'Company not found.'
             ]);
         }
     }
@@ -178,46 +144,13 @@ class CompanyController extends Controller
      */
     public function search($name)
     {
-        $data = Company::where('name','like','%'.$name.'%')
-                    ->whereNull('deleted_at')
-                    ->get();
+        $data = Company::where('name','like','%'.$name.'%')->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Company detail',
+                'message' => 'Company content detail.',
                 'data' => $data
             ]);
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Company not found'
-            ]);
-        }
-    }
-
-    /**
-     * Restore the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function restore($id)
-    {
-        $data = Company::where('id', $id)
-                    ->get();
-        if ($data->isNotEmpty()) {
-            $restore = Company::where('deleted_at', 1)->update(['deleted_at' => null]);
-            if ($restore) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Company restore success',
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Company not found.',
-                ]);
-            }
         } else {
             return response()->json([
                 'status' => 404,

@@ -20,14 +20,13 @@ class TrainingRoomController extends Controller
         if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Training room list',
+                'message' => 'Training rooms list.',
                 'data' => $data
             ]);
-
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Training room not found'
+                'message' => 'Training room not found.'
             ]);
         }
     }
@@ -52,7 +51,7 @@ class TrainingRoomController extends Controller
         if($validator->fails()){ 
             return response()->json([
                 'status' => 400,
-                'message' => 'Please fill out the information completely',
+                'message' => 'Please fill out the information completely.',
                 'error' => $validator->errors()
             ]);
         } else {
@@ -63,13 +62,44 @@ class TrainingRoomController extends Controller
                 ]);
             } else {
                 $data = TrainingRoom::create($input);
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Training room created successfully.',
-                    'data' => $data
-                ]);
+                if ($data) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Training room created successfully.',
+                        'data' => $data
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Training room created fail.',
+                    ]);
+                }
             }
         }
+    }
+
+    /**
+     * Show the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Request $request)
+    {
+        $data = TrainingRoom::where('training_id', $request->training_id)
+                            ->where('member_id', $request->member_id)
+                            ->get();
+        if ($data->isEmpty()) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Training room not found.'
+            ]);
+        }
+        return response()->json([
+            'status' => 200,
+            'message' => 'Training room content detail.',
+            'data' => $data
+        ]);
     }
 
     /**
@@ -89,10 +119,7 @@ class TrainingRoomController extends Controller
         if ($data->isNotEmpty()) {
             $data = TrainingRoom::where('training_id', $training_id)
                                 ->where('member_id', $member_id)
-                                ->update([
-                                    'result' => $request->result,
-                                    'note' => $request->note
-                                ]);
+                                ->update($request->all());
             if ($data) {
                 return response()->json([
                     'status' => 200,
@@ -107,73 +134,26 @@ class TrainingRoomController extends Controller
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Training room update fail.',
+                'message' => 'Training room not found.',
             ]);
         }
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Search the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  int  $name
      * @return \Illuminate\Http\Response
      */
-    public function delete(Request $request)
+    public function search($date_start)
     {
-        $training_id = $request->training_id;
-        $member_id = $request->member_id;
-        $data = TrainingRoom::where('training_id', $training_id)
-                                ->where('member_id', $member_id)
-                                ->get();
+        $data = TrainingRoom::where('date_start','like','%'.$date_start.'%')->get();
         if ($data->isNotEmpty()) {
-            $data = TrainingRoom::where('training_id', $training_id)
-                                ->where('member_id', $member_id)
-                                ->update(['deleted_at' => 1]);
-            if ($data) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Training room deleted successfully.',
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Training room deleted fail.'
-                ]);
-            }
-        } else {
             return response()->json([
-                'status' => 404,
-                'message' => 'Training room deleted fail.'
+                'status' => 200,
+                'message' => 'Training room content detail.',
+                'data' => $data
             ]);
-        }
-    }
-
-    /**
-     * Restore the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function restore(Request $request)
-    {
-        $data = TrainingRoom::where('training_id', $request->training_id)
-                    ->where('member_id', $request->member_id)
-                    ->get();
-        if ($data) {
-            $restore = TrainingRoom::where('training_id', $request->training_id)
-                                ->where('member_id', $request->member_id)
-                                ->update(['deleted_at' => null]);
-            if ($restore) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Training room restore success',
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Training room not found.',
-                ]);
-            }
         } else {
             return response()->json([
                 'status' => 404,

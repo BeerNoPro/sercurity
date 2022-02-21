@@ -26,50 +26,43 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('admin')->group(function () {
     // List route company
     Route::resource('/company', CompanyController::class);
-    Route::get('/company/search/{name}', [CompanyController::class, 'search']);
-    Route::post('/company/restore/{id}', [CompanyController::class, 'restore']);
+    Route::get('/company-search/{name}', [CompanyController::class, 'search']);
 
     // List route work room
     Route::resource('/work-room', WorkRoomController::class);
-    Route::get('/work-room/search/{name}', [WorkRoomController::class, 'search']);
-    Route::post('/work-room/restore/{id}', [WorkRoomController::class, 'restore']);
+    Route::get('/work-room-search/{name}', [WorkRoomController::class, 'search']);
     
     // List route member
     Route::resource('/member', MemberController::class);
-    Route::get('/member/search/{name}', [MemberController::class, 'search']);
-    Route::post('/member/restore/{id}', [MemberController::class, 'restore']);
+    Route::get('/member-search/{name}', [MemberController::class, 'search']);
     
     // List route project
     Route::resource('/project', ProjectController::class);
-    Route::get('/project/search/{name}', [ProjectController::class, 'search']);
-    Route::post('/project/restore/{id}', [ProjectController::class, 'restore']);
+    Route::get('/project-search/{name}', [ProjectController::class, 'search']);
     
     // List route member project
     Route::resource('/member-project', MemberProjectController::class);
+    Route::post('/member-project-edit', [MemberProjectController::class, 'edit']);
     Route::put('/member-project-update', [MemberProjectController::class, 'save']);
-    Route::delete('/member-project-delete', [MemberProjectController::class, 'delete']);
-    Route::post('/member-project-restore', [MemberProjectController::class, 'restore']);
+    Route::get('/member-project-search/{role}', [MemberProjectController::class, 'search']);
     
     // List route training
     Route::resource('/training', TrainingController::class);
-    Route::get('/training/search/{content}', [TrainingController::class, 'search']);
-    Route::post('/training/restore/{id}', [TrainingController::class, 'restore']);
+    Route::get('/training-search/{content}', [TrainingController::class, 'search']);
 
     // List route training room
     Route::resource('/training-room', TrainingRoomController::class);
+    Route::post('/training-room-edit', [TrainingRoomController::class, 'edit']);
     Route::put('/training-room-update', [TrainingRoomController::class, 'save']);
-    Route::delete('/training-room-delete', [TrainingRoomController::class, 'delete']);
-    Route::post('/training-room-restore', [TrainingRoomController::class, 'restore']);
+    Route::get('/training-room-search/{date_start}', [TrainingRoomController::class, 'search']);
 
     // List route Device
     Route::resource('/device', DeviceController::class);
-    Route::get('/device/search/{user_login}', [DeviceController::class, 'search']);
-    Route::post('/device/restore/{id}', [DeviceController::class, 'restore']);
+    Route::get('/device-search/{user_login}', [DeviceController::class, 'search']);
 
     // List route carbinet
     Route::resource('/carbinet', CarbinetController::class);
-    Route::get('/carbinet/search/{name}', [CarbinetController::class, 'search']);
-    Route::post('/carbinet/restore/{id}', [CarbinetController::class, 'restore']);
+    Route::get('/carbinet-search/{name}', [CarbinetController::class, 'search']);
 });
 
 

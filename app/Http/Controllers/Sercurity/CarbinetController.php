@@ -20,14 +20,13 @@ class CarbinetController extends Controller
         if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Carbinet list',
+                'message' => 'Carbinets content list.',
                 'data' => $data
             ]);
-
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Carbinet not found'
+                'message' => 'Carbinet content not found.'
             ]);
         }
     }
@@ -40,6 +39,7 @@ class CarbinetController extends Controller
      */
     public function store(Request $request)
     {
+        $data = $request->all();
         // check record exists in database?
         $check = Carbinet::where('name', $request->name)
                         ->where('work_room_id', $request->work_room_id)
@@ -47,12 +47,12 @@ class CarbinetController extends Controller
                         ->count();
         if($check > 0 ) { 
             return response()->json([
-                'status' => 400,
-                'message' => 'Carbinet already exists.',
+                'status' => 200,
+                'message' => 'Carbinet content created successfully.',
+                'data' => $data
             ]);
         } else { 
-            $input = $request->all();
-            $validator = Validator::make($input, [
+            $validator = Validator::make($data, [
                 'name' => 'required',
                 'work_room_id' => 'required',
                 'member_id' => 'required',
@@ -60,7 +60,7 @@ class CarbinetController extends Controller
             if($validator->fails()){ 
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Please fill out the information completely',
+                    'message' => 'Please fill out the information completely.',
                     'error' => $validator->errors()
                 ]);
             } else {
@@ -70,15 +70,44 @@ class CarbinetController extends Controller
                         'message' => 'Member or work room not found. Register member or work room please!',
                     ]);
                 } else {
-                    $data = Carbinet::create($input);
-                    return response()->json([
-                        'status' => 200,
-                        'message' => 'Carbinet content created successfully.',
-                        'data' => $data
-                    ]);
+                    $data = Carbinet::create($data);
+                    if ($data) {
+                        return response()->json([
+                            'status' => 200,
+                            'message' => 'Carbinet content created successfully.',
+                            'data' => $data
+                        ]);
+                    } else {
+                        return response()->json([
+                            'status' => 400,
+                            'message' => 'Carbinet content created fail.'
+                        ]);
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Show the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $data = Carbinet::find($id);
+        if (is_null($data)) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Carbinet content not found.'
+            ]);
+        }
+        return response()->json([
+            'status' => 200,
+            'message' => 'Carbinet content detail.',
+            'data' => $data
+        ]);
     }
 
     /**
@@ -99,51 +128,29 @@ class CarbinetController extends Controller
                             ->count();
             if ($check > 0) {
                 return response()->json([
-                    'status' => 400,
-                    'message' => 'Carbinet already exists.',
-                ]);
-            } else {
-                $data->update($request->all());
-                return response()->json([
                     'status' => 200,
                     'message' => 'Carbinet updated successfully.',
                     'data' => $data,
                 ]);
-            }
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Carbinet content update fail.'
-            ]);
-        }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $data = Carbinet::find($id); 
-        if ($data) {
-            $data = Carbinet::where('id', $id)->update(['deleted_at' => 1]);
-            if ($data) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Carbinet content deleted successfully.'
-                ]);
             } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Carbinet content deleted fail'
-                ]);
+                $result = $data->update($request->all());
+                if ($result) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Carbinet updated successfully.',
+                        'data' => $data,
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Carbinet updated fail.'
+                    ]);
+                }
             }
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Carbinet content deleted fail'
+                'message' => 'Carbinet content not found.'
             ]);
         }
     }
@@ -156,50 +163,17 @@ class CarbinetController extends Controller
      */
     public function search($name)
     {
-        $data = Carbinet::where('name','like','%'.$name.'%')
-                        ->whereNull('deleted_at')
-                        ->get();
+        $data = Carbinet::where('name','like','%'.$name.'%')->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Carbinet content detail',
+                'message' => 'Carbinet content detail.',
                 'data' => $data
             ]);
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Carbinet not found.',
-            ]);
-        }
-    }
-
-    /**
-     * Restore the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function restore($id)
-    {
-        $data = Carbinet::where('id', $id)
-                    ->get();
-        if ($data->isNotEmpty()) {
-            $restore = Carbinet::where('deleted_at', 1)->update(['deleted_at' => null]);
-            if ($restore) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Carbinet restore success',
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Carbinet not found.',
-                ]);
-            }
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Carbinet not found.'
+                'message' => 'Carbinet content not found.',
             ]);
         }
     }

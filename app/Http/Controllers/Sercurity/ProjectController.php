@@ -20,14 +20,13 @@ class ProjectController extends Controller
         if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Project list',
+                'message' => 'Projects list.',
                 'data' => $data
             ]);
-
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Project not found'
+                'message' => 'Project not found.'
             ]);
         }
     }
@@ -40,6 +39,7 @@ class ProjectController extends Controller
      */
     public function store(Request $request)
     {
+        $data = $request->all();
         // check record exists in database?
         $check = Project::where('name', $request->name)
                         ->where('time_start', $request->time_start)
@@ -48,22 +48,20 @@ class ProjectController extends Controller
                         ->count();
         if($check > 0 ) { 
             return response()->json([
-                'status' => 400,
-                'message' => 'Project already exists.'
+                'status' => 200,
+                'message' => 'Project created successfully.',
+                'data' => $data
             ]);
         } else { 
-            $input = $request->all();
-            $validator = Validator::make($input, [
+            $validator = Validator::make($data, [
                 'name' => 'required',
                 'time_start' => 'required',
                 'time_completed' => 'required',
-                'company_id' => '',
-                'work_room_id' => '',
             ]);
             if($validator->fails()){ 
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Please fill out the information completely',
+                    'message' => 'Please fill out the information completely.',
                     'error' => $validator->errors()
                 ]);
             } else {
@@ -73,15 +71,44 @@ class ProjectController extends Controller
                         'message' => 'Check registered company or work room, please!',
                     ]);
                 } else {
-                    $data = Project::create($input);
-                    return response()->json([
-                        'status' => 200,
-                        'message' => 'Project created successfully.',
-                        'data' => $data
-                    ]);
+                    $data = Project::create($data);
+                    if ($data) {
+                        return response()->json([
+                            'status' => 200,
+                            'message' => 'Project created successfully.',
+                            'data' => $data
+                        ]);
+                    } else {
+                        return response()->json([
+                            'status' => 400,
+                            'message' => 'Project created fail.'
+                        ]);
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Show the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $data = Project::find($id);
+        if (is_null($data)) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Project not found.'
+            ]);
+        }
+        return response()->json([
+            'status' => 200,
+            'message' => 'Project content detail.',
+            'data' => $data
+        ]);
     }
 
     /**
@@ -102,53 +129,28 @@ class ProjectController extends Controller
                             ->count();
             if ($check > 0) {
                 return response()->json([
-                    'status' => 400,
-                    'message' => 'Project already exists.',
-                ]);
-            } else {
-                $data->update($request->all());
-                return response()->json([
                     'status' => 200,
                     'message' => 'Project updated successfully.',
-                    'data' => $data,
-                ]);
-            }
-
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Project update fail'
-            ]);
-        }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $data = Project::find($id); 
-        if ($data) {
-            // $data->delete($id);
-            $data = Project::where('id', $id)->update(['deleted_at' => 1]);
-            if ($data) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Project deleted successfully.'
                 ]);
             } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Project deleted fail'
-                ]);
+                $result = $data->update($request->all());
+                if ($result) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Project updated successfully.',
+                        'data' => $data,
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Project updated fail.'
+                    ]);
+                }
             }
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Project deleted fail'
+                'message' => 'Project not found.'
             ]);
         }
     }
@@ -161,46 +163,13 @@ class ProjectController extends Controller
      */
     public function search($name)
     {
-        $data = Project::where('name','like','%'.$name.'%')
-                    ->whereNull('deleted_at')
-                    ->get();
+        $data = Project::where('name','like','%'.$name.'%')->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Project detail',
+                'message' => 'Project content detail.',
                 'data' => $data
             ]);
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Project not found'
-            ]);
-        }
-    }
-
-    /**
-     * Restore the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function restore($id)
-    {
-        $data = Project::where('id', $id)
-                    ->get();
-        if ($data->isNotEmpty()) {
-            $restore = Project::where('deleted_at', 1)->update(['deleted_at' => null]);
-            if ($restore) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Project restore success',
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Project not found.',
-                ]);
-            }
         } else {
             return response()->json([
                 'status' => 404,

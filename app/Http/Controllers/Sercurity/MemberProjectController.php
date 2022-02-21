@@ -20,14 +20,13 @@ class MemberProjectController extends Controller
         if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Member project list',
+                'message' => 'Member projects list.',
                 'data' => $data
             ]);
-
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Member project not found'
+                'message' => 'Member project not found.'
             ]);
         }
     }
@@ -51,7 +50,7 @@ class MemberProjectController extends Controller
         if($validator->fails()){ 
             return response()->json([
                 'status' => 400,
-                'message' => 'Please fill out the information completely',
+                'message' => 'Please fill out the information completely.',
                 'error' => $validator->errors()
             ]);
         } else {
@@ -62,13 +61,44 @@ class MemberProjectController extends Controller
                 ]);
             } else {
                 $data = MemberProject::create($input);
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Member project created successfully.',
-                    'data' => $data
-                ]);
+                if ($data) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Member project created successfully.',
+                        'data' => $data
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Member project created fail.',
+                    ]);
+                }
             }
         }
+    }
+
+    /**
+     * Show the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Request $request)
+    {
+        $data = MemberProject::where('member_id', $request->member_id)
+                            ->where('project_id', $request->project_id)
+                            ->get();
+        if ($data->isEmpty()) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Project not found.'
+            ]);
+        }
+        return response()->json([
+            'status' => 200,
+            'message' => 'Project content detail.',
+            'data' => $data
+        ]);
     }
 
     /**
@@ -88,7 +118,7 @@ class MemberProjectController extends Controller
         if ($data->isNotEmpty()) {
             $data = MemberProject::where('project_id', $project_id)
                                 ->where('member_id', $member_id)
-                                ->update(['role' => $request->role]);
+                                ->update($request->all());
             if ($data) {
                 return response()->json([
                     'status' => 200,
@@ -103,73 +133,26 @@ class MemberProjectController extends Controller
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Member project update fail.'
+                'message' => 'Member project not found.'
             ]);
         }
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Search the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  int  $name
      * @return \Illuminate\Http\Response
      */
-    public function delete(Request $request)
+    public function search($role)
     {
-        $project_id = $request->project_id;
-        $member_id = $request->member_id;
-        $data = MemberProject::where('project_id', $project_id)
-                                ->where('member_id', $member_id)
-                                ->get();
+        $data = MemberProject::where('role','like','%'.$role.'%')->get();
         if ($data->isNotEmpty()) {
-            $data = MemberProject::where('project_id', $project_id)
-                                ->where('member_id', $member_id)
-                                ->update(['deleted_at' => 1]);
-            if ($data) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Member project deleted successfully.',
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Member project deleted fail.'
-                ]);
-            }
-        } else {
             return response()->json([
-                'status' => 404,
-                'message' => 'Member project deleted fail.'
+                'status' => 200,
+                'message' => 'Member project content detail.',
+                'data' => $data
             ]);
-        }
-    }
-
-    /**
-     * Restore the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function restore(Request $request)
-    {
-        $data = MemberProject::where('member_id', $request->member_id)
-                    ->where('project_id', $request->project_id)
-                    ->get();
-        if ($data) {
-            $restore = MemberProject::where('member_id', $request->member_id)
-                                ->where('project_id', $request->project_id)
-                                ->update(['deleted_at' => null]);
-            if ($restore) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Member project restore success',
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Member project not found.',
-                ]);
-            }
         } else {
             return response()->json([
                 'status' => 404,

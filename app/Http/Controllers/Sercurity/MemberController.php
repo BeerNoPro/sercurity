@@ -20,14 +20,13 @@ class MemberController extends Controller
         if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Member list',
+                'message' => 'Members list.',
                 'data' => $data
             ]);
-
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Member not found'
+                'message' => 'Member not found.'
             ]);
         }
     }
@@ -40,30 +39,27 @@ class MemberController extends Controller
      */
     public function store(Request $request)
     {
+        $data = $request->all();
         // check record exists in database?
         $check = Member::where('name', $request->name)
                         ->where('email', $request->email)
                         ->where('address', $request->address)
                         ->where('date_join_company', $request->date_join_company)
                         ->count();
-
         if($check > 0 ) {
             return response()->json([
-                'status' => 400,
-                'message' => 'Member already exists.'
+                'status' => 200,
+                'message' => 'Member created successfully.',
+                'data' => $data
             ]);
         } else { 
-            $input = $request->all();
-            $validator = Validator::make($input, [
+            $validator = Validator::make($data, [
                 'name' => 'required',
                 'email' => 'required',
-                'passwork' => '',
                 'address' => 'required',
                 'phone_number' => 'required',
                 'work_position' => 'required',
                 'date_join_company' => 'required',
-                'date_left_company' => '',
-                'company_id' => '',
             ]);
             if($validator->fails()){ 
                 return response()->json([
@@ -78,15 +74,44 @@ class MemberController extends Controller
                         'message' => 'Company not found. Register company please!',
                     ]);
                 } else {
-                    $data = Member::create($input);
-                    return response()->json([
-                        'status' => 200,
-                        'message' => 'Member created successfully.',
-                        'data' => $data
-                    ]);
+                    $data = Member::create($data);
+                    if ($data) {
+                        return response()->json([
+                            'status' => 200,
+                            'message' => 'Member created successfully.',
+                            'data' => $data
+                        ]);
+                    } else {
+                        return response()->json([
+                            'status' => 400,
+                            'message' => 'Member created fail.',
+                        ]);
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Show the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $data = Member::find($id);
+        if (is_null($data)) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Member not found.'
+            ]);
+        }
+        return response()->json([
+            'status' => 200,
+            'message' => 'Member content detail.',
+            'data' => $data
+        ]);
     }
 
     /**
@@ -100,59 +125,23 @@ class MemberController extends Controller
     {
         $data = Member::find($id);
         if ($data) {
-            // check record exists in database?
-            $check = Member::where('name', $request->name)
-                        ->where('email', $request->email)
-                        ->where('address', $request->address)
-                        ->where('date_join_company', $request->date_join_company)
-                        ->count();
-            if ($check > 0) {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Member already exists.',
-                ]);
-            } else {
-                $data->update($request->all());
+            $result = $data->update($request->all());
+            if ($result) {
                 return response()->json([
                     'status' => 200,
                     'message' => 'Member updated successfully.',
                     'data' => $data,
                 ]);
-            }
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Member update fail'
-            ]);
-        }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $data = Member::find($id); 
-        if ($data) {
-            $data = Member::where('id', $id)->update(['deleted_at' => 1]);
-            if ($data) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Member deleted successfully.'
-                ]);
             } else {
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Member deleted fail'
+                    'message' => 'Member update fail.'
                 ]);
             }
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Member deleted fail'
+                'message' => 'Member not found.'
             ]);
         }
     }
@@ -165,46 +154,13 @@ class MemberController extends Controller
      */
     public function search($name)
     {
-        $data = Member::where('name','like','%'.$name.'%')
-                    ->whereNull('deleted_at')
-                    ->get();
+        $data = Member::where('name','like','%'.$name.'%')->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Member detail',
+                'message' => 'Member content detail.',
                 'data' => $data
             ]);
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Member not found'
-            ]);
-        }
-    }
-
-    /**
-     * Restore the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function restore($id)
-    {
-        $data = Member::where('id', $id)
-                    ->get();
-        if ($data->isNotEmpty()) {
-            $restore = Member::where('deleted_at', 1)->update(['deleted_at' => null]);
-            if ($restore) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Member restore success',
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Member not found.',
-                ]);
-            }
         } else {
             return response()->json([
                 'status' => 404,

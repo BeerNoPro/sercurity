@@ -20,14 +20,13 @@ class WorkRoomController extends Controller
         if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Work room list',
+                'message' => 'Work rooms list.',
                 'data' => $data
             ]);
-
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Work room not found'
+                'message' => 'Work room not found.'
             ]);
         }
     }
@@ -40,24 +39,22 @@ class WorkRoomController extends Controller
      */
     public function store(Request $request)
     {
+        $data = $request->all();
         // check record exists in database?
         $check = WorkRoom::where('name', $request->name)
                         ->where('location', $request->location)
                         ->count();
-
         if($check > 0 ) { 
             return response()->json([
-                'status' => 400,
-                'message' => 'Work room already exists.'
+                'status' => 200,
+                'message' => 'Work room created successfully.',
+                'data' => $data
             ]);
-
         } else { 
-            $input = $request->all();
-            $validator = Validator::make($input, [
+            $validator = Validator::make($data, [
                 'name' => 'required',
                 'location' => 'required',
             ]);
-    
             if($validator->fails()){ 
                 return response()->json([
                     'status' => 400,
@@ -65,18 +62,24 @@ class WorkRoomController extends Controller
                     'error' => $validator->errors()
                 ]);
             }
-            $data = WorkRoom::create($input);
-    
-            return response()->json([
-                'status' => 200,
-                'message' => 'Work room created successfully.',
-                'data' => $data
-            ]);
+            $data = WorkRoom::create($data);
+            if ($data) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Work room created successfully.',
+                    'data' => $data
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Work room created fail.',
+                ]);
+            }
         }
     }
 
     /**
-     * Display the specified resource.
+     * Show the specified resource.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -92,7 +95,7 @@ class WorkRoomController extends Controller
         }
         return response()->json([
             'status' => 200,
-            'message' => 'Work room retrieved successfully.',
+            'message' => 'Work room content detail.',
             'data' => $data
         ]);
     }
@@ -108,57 +111,23 @@ class WorkRoomController extends Controller
     {
         $data = WorkRoom::find($id);
         if ($data) {
-            $check = WorkRoom::where('name', $request->name)
-                        ->where('location', $request->location)
-                        ->count();
-            if ($check > 0) {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Work room already exists.',
-                ]);
-            } else {
-                $data->update($request->all());
+            $result = $data->update($request->all());
+            if ($result) {
                 return response()->json([
                     'status' => 200,
                     'message' => 'Work room updated successfully.',
                     'data' => $data,
                 ]);
-            }
-
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Work room update fail'
-            ]);
-        }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $data = WorkRoom::find($id); 
-        if ($data) {
-            $data = WorkRoom::where('id', $id)->update(['deleted_at' => 1]);
-            if ($data) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Work room deleted successfully.'
-                ]);
             } else {
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Work room deleted fail.'
+                    'message' => 'Work room updated fail.'
                 ]);
             }
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Work room deleted fail.'
+                'message' => 'Work room not found.'
             ]);
         }
     }
@@ -171,46 +140,13 @@ class WorkRoomController extends Controller
      */
     public function search($name)
     {
-        $data = WorkRoom::where('name','like','%'.$name.'%')
-                    ->whereNull('deleted_at')
-                    ->get();
+        $data = WorkRoom::where('name','like','%'.$name.'%')->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Work room detail',
+                'message' => 'Work room content detail.',
                 'data' => $data
             ]);
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Work room not found'
-            ]);
-        }
-    }
-
-    /**
-     * Restore the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function restore($id)
-    {
-        $data = WorkRoom::where('id', $id)
-                    ->get();
-        if ($data->isNotEmpty()) {
-            $restore = WorkRoom::where('deleted_at', 1)->update(['deleted_at' => null]);
-            if ($restore) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Work room restore success',
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Work room not found.',
-                ]);
-            }
         } else {
             return response()->json([
                 'status' => 404,

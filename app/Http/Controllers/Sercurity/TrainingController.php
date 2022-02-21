@@ -20,14 +20,13 @@ class TrainingController extends Controller
         if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Training list',
+                'message' => 'Trainings content list.',
                 'data' => $data
             ]);
-
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Training not found'
+                'message' => 'Training not found.'
             ]);
         }
     }
@@ -40,28 +39,26 @@ class TrainingController extends Controller
      */
     public function store(Request $request)
     {
+        $data = $request->all();
         // check record exists in database?
         $check = Training::where('trainer', $request->trainer)
                         ->where('project_id', $request->project_id)
                         ->where('content', $request->content)
                         ->count();
-
         if($check > 0 ) { 
             return response()->json([
-                'status' => 400,
-                'message' => 'Training already exists.',
+                'status' => 200,
+                'message' => 'Training content created successfully.',
+                'data' => $data
             ]);
         } else { 
-            $input = $request->all();
-            $validator = Validator::make($input, [
-                'trainer' => '',
+            $validator = Validator::make($data, [
                 'content' => 'required',
-                'project_id' => '',
             ]);
             if($validator->fails()){ 
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Please fill out the information completely',
+                    'message' => 'Please fill out the information completely.',
                     'error' => $validator->errors()
                 ]);
             } else {
@@ -71,15 +68,44 @@ class TrainingController extends Controller
                         'message' => 'Member trainer or project not found. Register member or project please!',
                     ]);
                 } else {
-                    $data = Training::create($input);
-                    return response()->json([
-                        'status' => 200,
-                        'message' => 'Training content created successfully.',
-                        'data' => $data
-                    ]);
+                    $data = Training::create($data);
+                    if ($data) {
+                        return response()->json([
+                            'status' => 200,
+                            'message' => 'Training content created successfully.',
+                            'data' => $data
+                        ]);
+                    } else {
+                        return response()->json([
+                            'status' => 400,
+                            'message' => 'Training content created fail.'
+                        ]);
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Show the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $data = Training::find($id);
+        if (is_null($data)) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Training not found.'
+            ]);
+        }
+        return response()->json([
+            'status' => 200,
+            'message' => 'Training content detail.',
+            'data' => $data
+        ]);
     }
 
     /**
@@ -100,51 +126,28 @@ class TrainingController extends Controller
                             ->count();
             if ($check > 0) {
                 return response()->json([
-                    'status' => 400,
-                    'message' => 'Training already exists.',
-                ]);
-            } else {
-                $data->update($request->all());
-                return response()->json([
                     'status' => 200,
                     'message' => 'Training updated successfully.',
-                    'data' => $data,
-                ]);
-            }
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Training content update fail.'
-            ]);
-        }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $data = Training::find($id); 
-        if ($data) {
-            $data = Training::where('id', $id)->update(['deleted_at' => 1]);
-            if ($data) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Training content deleted successfully.'
                 ]);
             } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Training content deleted fail'
-                ]);
+                $result = $data->update($request->all());
+                if ($result) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Training updated successfully.',
+                        'data' => $data,
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Training updated fail.',
+                    ]);
+                }
             }
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Training content deleted fail'
+                'message' => 'Training content not found.'
             ]);
         }
     }
@@ -157,50 +160,17 @@ class TrainingController extends Controller
      */
     public function search($content)
     {
-        $data = Training::where('content','like','%'.$content.'%')
-                        ->whereNull('deleted_at')
-                        ->get();
+        $data = Training::where('content','like','%'.$content.'%')->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Training content detail',
+                'message' => 'Training content detail.',
                 'data' => $data
             ]);
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Training not found.',
-            ]);
-        }
-    }
-
-    /**
-     * Restore the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function restore($id)
-    {
-        $data = Training::where('id', $id)
-                    ->get();
-        if ($data->isNotEmpty()) {
-            $restore = Training::where('deleted_at', 1)->update(['deleted_at' => null]);
-            if ($restore) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Training restore success',
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Training not found.',
-                ]);
-            }
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Training not found.'
+                'message' => 'Training content not found.',
             ]);
         }
     }
