@@ -8,6 +8,7 @@ use App\Http\Controllers\Sercurity\MemberProjectController;
 use App\Http\Controllers\Sercurity\ProjectController;
 use App\Http\Controllers\Sercurity\TrainingController;
 use App\Http\Controllers\Sercurity\TrainingRoomController;
+use App\Http\Controllers\Sercurity\View\ShowListController;
 use App\Http\Controllers\Sercurity\WorkRoomController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -65,6 +66,38 @@ Route::prefix('admin')->group(function () {
     Route::get('/carbinet-search/{name}', [CarbinetController::class, 'search']);
 });
 
+
+Route::prefix('view')->group(function () {
+    // Show lists content
+    Route::get('/', [ShowListController::class, 'showListProject']);
+
+    // Show lists content company detail
+    Route::get('/company/{id}', [ShowListController::class, 'companyDetail']);
+
+    // Show lists content work-room detail
+    Route::get('/work-room/{id}', [ShowListController::class, 'workRoomDetail']);
+
+    // Show lists content member detail
+    Route::get('/member/{id}', [ShowListController::class, 'memberDetail']);
+    
+    // Show lists content project detail
+    Route::get('/project/{id}', [ShowListController::class, 'projectDetail']);
+
+    // Show lists content member project detail
+    Route::get('/member-project/{member_id}/{project_id}', [ShowListController::class, 'memberProjectDetail']);
+
+    // Show lists content training detail
+    Route::get('/training/{id}', [ShowListController::class, 'trainingDetail']);
+
+    // Show lists content training room detail
+    Route::get('/training-room/{training_id}/{member_id}', [ShowListController::class, 'trainingRoomDetail']);
+
+    // Show lists content device detail
+    Route::get('/device/{id}', [ShowListController::class, 'deviceDetail']);
+
+    // Show lists content carbinet detail
+    Route::get('/carbinet/{id}', [ShowListController::class, 'carbinetDetail']);
+});
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

@@ -115,3 +115,18 @@ ALTER TABLE `carbinet` ADD FOREIGN KEY (`work_room_id`) REFERENCES `work_room` (
 ALTER TABLE `carbinet` ADD FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 
 
+-- sql query view
+-- SELECT 
+-- company.id, company.name AS company, 
+-- project.id, project.name AS project, 
+-- work_room.id, work_room.name AS work_room,
+-- member.id, member.name AS member, 
+-- device.id, device.user_login,
+-- carbinet.id, carbinet.name AS carbinet
+-- FROM company
+-- JOIN project ON company.id = project.company_id
+-- JOIN work_room ON project.work_room_id = work_room.id
+-- JOIN member ON company.id = member.company_id
+-- JOIN device ON member.id = device.member_id
+-- JOIN carbinet ON work_room.id = carbinet.work_room_id
+
