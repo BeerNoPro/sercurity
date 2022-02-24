@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('admin')->group(function () {
     // List route company
     Route::resource('/company', CompanyController::class);
+    Route::post('/company/{id}', [CompanyController::class, 'update']);
     Route::get('/company-search/{name}', [CompanyController::class, 'search']);
 
     // List route work room

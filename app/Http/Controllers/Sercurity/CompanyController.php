@@ -115,18 +115,34 @@ class CompanyController extends Controller
     {
         $data = Company::find($id);
         if ($data) {
-            $result = $data->update($request->all());
-            if ($result) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Company updated successfully.',
-                    'data' => $data,
-                ]);
-            } else {
+            $input = $request->all();
+            $validator = Validator::make($input, [
+                'name' => 'required',
+                'address' => 'required',
+                'email' => 'required',
+                'phone' => 'required',
+                'date_incorporation' => 'required',
+            ]);
+            if($validator->fails()){ 
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Company updated fail.',
+                    'message' => 'Please fill out the information completely.',
+                    'error' => $validator->errors()
                 ]);
+            } else {
+                $result = $data->update($request->all());
+                if ($result) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Company updated successfully.',
+                        'data' => $data,
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 404,
+                        'message' => 'Company updated fail.',
+                    ]);
+                }
             }
         } else {
             return response()->json([
