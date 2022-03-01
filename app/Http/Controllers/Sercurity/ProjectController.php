@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sercurity;
 use App\Http\Controllers\Controller;
 use App\Models\Sercurity\Project;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class ProjectController extends Controller
@@ -14,14 +15,24 @@ class ProjectController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = Project::all();
+        $data = DB::table('project')
+        ->join('company', 'company.id', '=', 'project.company_id')
+        ->join('work_room', 'work_room.id', '=', 'project.work_room_id')
+        ->select('project.*', 'company.name as company_name', 'work_room.name as work_room_name', 'work_room.location as work_room_location')
+        ->paginate(6);
+        $page = 1;
+        if (isset($request->page)) {
+            $page = $request->page;
+        }
+        $index = ($page - 1) * 6 + 1;
         if ($data) {
             return response()->json([
                 'status' => 200,
                 'message' => 'Projects list.',
-                'data' => $data
+                'data' => $data,
+                'index' => $index,
             ]);
         } else {
             return response()->json([
@@ -57,6 +68,8 @@ class ProjectController extends Controller
                 'name' => 'required',
                 'time_start' => 'required',
                 'time_completed' => 'required',
+                'company_id' => 'required',
+                'work_room_id' => 'required',
             ]);
             if($validator->fails()){ 
                 return response()->json([
@@ -97,7 +110,12 @@ class ProjectController extends Controller
      */
     public function show($id)
     {
-        $data = Project::find($id);
+        $data = DB::table('project')
+        ->join('company', 'company.id', '=', 'project.company_id')
+        ->join('work_room', 'work_room.id', '=', 'project.work_room_id')
+        ->select('project.*', 'company.name as company_name', 'work_room.name as work_room_name', 'work_room.location as work_room_location')
+        ->where('project.id', $id)
+        ->get();
         if (is_null($data)) {
             return response()->json([
                 'status' => 404,
@@ -124,27 +142,42 @@ class ProjectController extends Controller
         if ($data) {
             // check record exists in database?
             $check = Project::where('name', $request->name)
-                            ->where('company_id', $request->company_id)
-                            ->where('work_room_id', $request->work_room_id)
-                            ->count();
+            ->where('company_id', $request->company_id)
+            ->where('work_room_id', $request->work_room_id)
+            ->count();
             if ($check > 0) {
                 return response()->json([
                     'status' => 200,
                     'message' => 'Project updated successfully.',
                 ]);
             } else {
-                $result = $data->update($request->all());
-                if ($result) {
-                    return response()->json([
-                        'status' => 200,
-                        'message' => 'Project updated successfully.',
-                        'data' => $data,
-                    ]);
-                } else {
+                $input = $request->all();
+                $validator = Validator::make($input, [
+                    'name' => 'required',
+                    'time_start' => 'required',
+                    'time_completed' => 'required',
+                    'company_id' => 'required',
+                    'work_room_id' => 'required',
+                ]);
+                if($validator->fails()){ 
                     return response()->json([
                         'status' => 400,
-                        'message' => 'Project updated fail.'
+                        'message' => 'Please fill out the information completely.',
+                        'error' => $validator->errors()
                     ]);
+                } else {
+                    $result = $data->update($request->all());
+                    if ($result) {
+                        return response()->json([
+                            'status' => 200,
+                            'message' => 'Project updated successfully.'
+                        ]);
+                    } else {
+                        return response()->json([
+                            'status' => 400,
+                            'message' => 'Project updated fail.'
+                        ]);
+                    }
                 }
             }
         } else {
@@ -163,7 +196,12 @@ class ProjectController extends Controller
      */
     public function search($name)
     {
-        $data = Project::where('name','like','%'.$name.'%')->get();
+        $data = DB::table('project')
+        ->join('company', 'company.id', '=', 'project.company_id')
+        ->join('work_room', 'work_room.id', '=', 'project.work_room_id')
+        ->select('project.*', 'company.name as company_name', 'work_room.name as work_room_name', 'work_room.location as work_room_location')
+        ->where('project.name','like','%'.$name.'%')
+        ->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
@@ -174,6 +212,31 @@ class ProjectController extends Controller
             return response()->json([
                 'status' => 404,
                 'message' => 'Project not found.'
+            ]);
+        }
+    }
+
+    /**
+     * Select the specified resource from storage.
+     *
+     * @param  int  $name
+     * @return \Illuminate\Http\Response
+     */
+    public function showForeignKey($name)
+    {
+        $data = DB::table($name)
+        ->select($name . '.name', $name . '.id')
+        ->get();
+        if ($data->isNotEmpty()) {
+            return response()->json([
+                'status' => 200,
+                'message' => $name . ' content detail.',
+                'data' => $data
+            ]);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => $name . ' not found.',
             ]);
         }
     }

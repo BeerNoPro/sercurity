@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sercurity;
 use App\Http\Controllers\Controller;
 use App\Models\Sercurity\Member;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class MemberController extends Controller
@@ -14,14 +15,23 @@ class MemberController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = Member::all();
+        $data = DB::table('member')
+        ->join('company', 'company.id', '=', 'member.company_id')
+        ->select('member.*', 'company.name as company_name')
+        ->paginate(6);
+        $page = 1;
+        if (isset($request->page)) {
+            $page = $request->page;
+        }
+        $index = ($page - 1) * 6 + 1;
         if ($data) {
             return response()->json([
                 'status' => 200,
                 'message' => 'Members list.',
-                'data' => $data
+                'data' => $data,
+                'index' => $index
             ]);
         } else {
             return response()->json([
@@ -45,6 +55,7 @@ class MemberController extends Controller
                         ->where('email', $request->email)
                         ->where('address', $request->address)
                         ->where('date_join_company', $request->date_join_company)
+                        ->where('company_id', $request->company_id)
                         ->count();
         if($check > 0 ) {
             return response()->json([
@@ -60,6 +71,7 @@ class MemberController extends Controller
                 'phone_number' => 'required',
                 'work_position' => 'required',
                 'date_join_company' => 'required',
+                'company_id' => 'required',
             ]);
             if($validator->fails()){ 
                 return response()->json([
@@ -74,8 +86,8 @@ class MemberController extends Controller
                         'message' => 'Company not found. Register company please!',
                     ]);
                 } else {
-                    $data = Member::create($data);
-                    if ($data) {
+                    $result = Member::create($data);
+                    if ($result) {
                         return response()->json([
                             'status' => 200,
                             'message' => 'Member created successfully.',
@@ -100,7 +112,11 @@ class MemberController extends Controller
      */
     public function show($id)
     {
-        $data = Member::find($id);
+        $data = DB::table('member')
+        ->join('company', 'company.id', '=', 'member.company_id')
+        ->select('member.*', 'company.name as company_name')
+        ->where('member.id', $id)
+        ->get();
         if (is_null($data)) {
             return response()->json([
                 'status' => 404,
@@ -125,18 +141,36 @@ class MemberController extends Controller
     {
         $data = Member::find($id);
         if ($data) {
-            $result = $data->update($request->all());
-            if ($result) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Member updated successfully.',
-                    'data' => $data,
-                ]);
-            } else {
+            $input = $request->all();
+            $validator = Validator::make($input, [
+                'name' => 'required',
+                'email' => 'required',
+                'address' => 'required',
+                'phone_number' => 'required',
+                'work_position' => 'required',
+                'date_join_company' => 'required',
+                'company_id' => 'required',
+            ]);
+            if($validator->fails()){ 
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Member update fail.'
+                    'message' => 'Please fill out the information completely',
+                    'error' => $validator->errors()
                 ]);
+            } else {
+                $result = $data->update($request->all());
+                if ($result) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Member updated successfully.',
+                        'data' => $data,
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Member update fail.'
+                    ]);
+                }
             }
         } else {
             return response()->json([
@@ -154,17 +188,53 @@ class MemberController extends Controller
      */
     public function search($name)
     {
-        $data = Member::where('name','like','%'.$name.'%')->get();
+        if ($name) {
+            $data = DB::table('member')
+            ->join('company', 'company.id', '=', 'member.company_id')
+            ->select('member.*', 'company.name as company_name')
+            ->where('member.name','like','%'.$name.'%')
+            ->get();
+            if ($data->isNotEmpty()) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Member content detail.',
+                    'data' => $data
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Member not found.',
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Member not found.'
+            ]);
+        }
+    }
+
+    /**
+     * Select the specified resource from storage.
+     *
+     * @param  int  $name
+     * @return \Illuminate\Http\Response
+     */
+    public function showForeignKey()
+    {
+        $data = DB::table('company')
+        ->select('company.name', 'company.id')
+        ->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Member content detail.',
+                'message' => 'Company content detail.',
                 'data' => $data
             ]);
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Member not found.'
+                'message' => 'Company not found.',
             ]);
         }
     }

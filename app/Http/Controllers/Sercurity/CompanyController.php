@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sercurity;
 use App\Http\Controllers\Controller;
 use App\Models\Sercurity\Company;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class CompanyController extends Controller
@@ -14,14 +15,20 @@ class CompanyController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = Company::all();
+        $data = DB::table('company')->paginate(6);
+        $page = 1;
+        if (isset($request->page)) {
+            $page = $request->page;
+        }
+        $index = ($page - 1) * 6 + 1;
         if ($data) {
             return response()->json([
                 'status' => 200,
                 'message' => 'Companies list.',
-                'data' => $data
+                'data' => $data,
+                'index' => $index
             ]);
         } else {
             return response()->json([

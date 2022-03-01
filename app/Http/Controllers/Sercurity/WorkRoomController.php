@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sercurity;
 use App\Http\Controllers\Controller;
 use App\Models\Sercurity\WorkRoom;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class WorkRoomController extends Controller
@@ -14,14 +15,20 @@ class WorkRoomController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = WorkRoom::all();
+        $data = DB::table('work_room')->paginate(6);
+        $page = 1;
+        if (isset($request->page)) {
+            $page = $request->page;
+        }
+        $index = ($page - 1) * 6 + 1;
         if ($data) {
             return response()->json([
                 'status' => 200,
                 'message' => 'Work rooms list.',
-                'data' => $data
+                'data' => $data,
+                'index' => $index
             ]);
         } else {
             return response()->json([
@@ -111,18 +118,31 @@ class WorkRoomController extends Controller
     {
         $data = WorkRoom::find($id);
         if ($data) {
-            $result = $data->update($request->all());
-            if ($result) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Work room updated successfully.',
-                    'data' => $data,
-                ]);
-            } else {
+            $input = $request->all();
+            $validator = Validator::make($input, [
+                'name' => 'required',
+                'location' => 'required',
+            ]);
+            if($validator->fails()){ 
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Work room updated fail.'
+                    'message' => 'Please fill out the information completely',
+                    'error' => $validator->errors()
                 ]);
+            } else {
+                $result = $data->update($request->all());
+                if ($result) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'Work room updated successfully.',
+                        'data' => $data,
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Work room updated fail.'
+                    ]);
+                }
             }
         } else {
             return response()->json([

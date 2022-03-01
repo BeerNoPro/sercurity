@@ -32,38 +32,52 @@ Route::prefix('admin')->group(function () {
 
     // List route work room
     Route::resource('/work-room', WorkRoomController::class);
+    Route::post('/work-room/{id}', [WorkRoomController::class, 'update']);
     Route::get('/work-room-search/{name}', [WorkRoomController::class, 'search']);
     
     // List route member
     Route::resource('/member', MemberController::class);
+    Route::get('/member-foreign', [MemberController::class, 'showForeignKey']);
+    Route::post('/member/{id}', [MemberController::class, 'update']);
     Route::get('/member-search/{name}', [MemberController::class, 'search']);
     
     // List route project
     Route::resource('/project', ProjectController::class);
+    Route::post('/project/{id}', [ProjectController::class, 'update']);
     Route::get('/project-search/{name}', [ProjectController::class, 'search']);
+    Route::get('/project-foreign/{name}', [ProjectController::class, 'showForeignKey']);
     
     // List route member project
     Route::resource('/member-project', MemberProjectController::class);
     Route::post('/member-project-edit', [MemberProjectController::class, 'edit']);
-    Route::put('/member-project-update', [MemberProjectController::class, 'save']);
-    Route::get('/member-project-search/{role}', [MemberProjectController::class, 'search']);
+    Route::post('/member-project-update/{id1}/{id2}', [MemberProjectController::class, 'save']);
+    Route::get('/member-project-search/{name}', [MemberProjectController::class, 'search']);
+    Route::get('/member-project-foreign/{name}', [MemberProjectController::class, 'showForeignKey']);
     
     // List route training
     Route::resource('/training', TrainingController::class);
-    Route::get('/training-search/{content}', [TrainingController::class, 'search']);
+    Route::post('/training/{id}', [TrainingController::class, 'update']);
+    Route::get('/training-search/{name}', [TrainingController::class, 'search']);
+    Route::get('/training-foreign/{name}', [TrainingController::class, 'showForeignKey']);
 
     // List route training room
     Route::resource('/training-room', TrainingRoomController::class);
     Route::post('/training-room-edit', [TrainingRoomController::class, 'edit']);
-    Route::put('/training-room-update', [TrainingRoomController::class, 'save']);
-    Route::get('/training-room-search/{date_start}', [TrainingRoomController::class, 'search']);
+    Route::post('/training-room-update/{id1}/{id2}', [TrainingRoomController::class, 'save']);
+    Route::get('/training-room-search/{name}', [TrainingRoomController::class, 'search']);
+    Route::get('/training-room-foreign/{name}', [TrainingRoomController::class, 'showForeignKey']);
+    Route::get('/training-room-sub-query', [TrainingRoomController::class, 'showForeignKeySubQuery']);
 
     // List route Device
     Route::resource('/device', DeviceController::class);
+    Route::post('/device/{id}', [DeviceController::class, 'update']);
+    Route::get('/device-foreign', [DeviceController::class, 'showForeignKey']);
     Route::get('/device-search/{user_login}', [DeviceController::class, 'search']);
 
     // List route carbinet
     Route::resource('/carbinet', CarbinetController::class);
+    Route::post('/carbinet/{id}', [CarbinetController::class, 'update']);
+    Route::get('/carbinet-foreign/{name}', [CarbinetController::class, 'showForeignKey']);
     Route::get('/carbinet-search/{name}', [CarbinetController::class, 'search']);
 });
 

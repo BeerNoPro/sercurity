@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sercurity;
 use App\Http\Controllers\Controller;
 use App\Models\Sercurity\Training;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class TrainingController extends Controller
@@ -14,14 +15,24 @@ class TrainingController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = Training::all();
+        $data = DB::table('training')
+        ->join('member', 'member.id', '=', 'training.trainer')
+        ->join('project', 'project.id', '=', 'training.project_id')
+        ->select('training.*', 'member.name as trainer_name', 'project.name as project_name')
+        ->paginate(6);
+        $page = 1;
+        if (isset($request->page)) {
+            $page = $request->page;
+        }
+        $index = ($page - 1) * 6 + 1;
         if ($data) {
             return response()->json([
                 'status' => 200,
                 'message' => 'Trainings content list.',
-                'data' => $data
+                'data' => $data,
+                'index' => $index
             ]);
         } else {
             return response()->json([
@@ -53,7 +64,9 @@ class TrainingController extends Controller
             ]);
         } else { 
             $validator = Validator::make($data, [
+                'trainer' => 'required',
                 'content' => 'required',
+                'project_id' => 'required',
             ]);
             if($validator->fails()){ 
                 return response()->json([
@@ -68,8 +81,8 @@ class TrainingController extends Controller
                         'message' => 'Member trainer or project not found. Register member or project please!',
                     ]);
                 } else {
-                    $data = Training::create($data);
-                    if ($data) {
+                    $result = Training::create($data);
+                    if ($result) {
                         return response()->json([
                             'status' => 200,
                             'message' => 'Training content created successfully.',
@@ -78,7 +91,8 @@ class TrainingController extends Controller
                     } else {
                         return response()->json([
                             'status' => 400,
-                            'message' => 'Training content created fail.'
+                            'message' => 'Training content created fail.',
+                            'data' => $data
                         ]);
                     }
                 }
@@ -94,7 +108,12 @@ class TrainingController extends Controller
      */
     public function show($id)
     {
-        $data = Training::find($id);
+        $data = DB::table('training')
+        ->join('member', 'member.id', '=', 'training.trainer')
+        ->join('project', 'project.id', '=', 'training.project_id')
+        ->select('training.*', 'member.name as trainer_name', 'project.name as project_name')
+        ->where('training.id', $id)
+        ->get();
         if (is_null($data)) {
             return response()->json([
                 'status' => 404,
@@ -130,18 +149,32 @@ class TrainingController extends Controller
                     'message' => 'Training updated successfully.',
                 ]);
             } else {
-                $result = $data->update($request->all());
-                if ($result) {
-                    return response()->json([
-                        'status' => 200,
-                        'message' => 'Training updated successfully.',
-                        'data' => $data,
-                    ]);
-                } else {
+                $input = $request->all();
+                $validator = Validator::make($input, [
+                    'trainer' => 'required',
+                    'content' => 'required',
+                    'project_id' => 'required',
+                ]);
+                if($validator->fails()){ 
                     return response()->json([
                         'status' => 400,
-                        'message' => 'Training updated fail.',
+                        'message' => 'Please fill out the information completely.',
+                        'error' => $validator->errors()
                     ]);
+                } else {
+                    $result = $data->update($request->all());
+                    if ($result) {
+                        return response()->json([
+                            'status' => 200,
+                            'message' => 'Training updated successfully.',
+                            'data' => $data,
+                        ]);
+                    } else {
+                        return response()->json([
+                            'status' => 400,
+                            'message' => 'Training updated fail.',
+                        ]);
+                    }
                 }
             }
         } else {
@@ -158,9 +191,14 @@ class TrainingController extends Controller
      * @param  int  $name
      * @return \Illuminate\Http\Response
      */
-    public function search($content)
+    public function search($name)
     {
-        $data = Training::where('content','like','%'.$content.'%')->get();
+        $data = DB::table('training')
+        ->join('member', 'member.id', '=', 'training.trainer')
+        ->join('project', 'project.id', '=', 'training.project_id')
+        ->select('training.*', 'member.name as trainer_name', 'project.name as project_name')
+        ->where('member.name','like','%'.$name.'%')
+        ->get();
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
@@ -171,6 +209,31 @@ class TrainingController extends Controller
             return response()->json([
                 'status' => 404,
                 'message' => 'Training content not found.',
+            ]);
+        }
+    }
+
+    /**
+     * Select the specified resource from storage.
+     *
+     * @param  int  $name
+     * @return \Illuminate\Http\Response
+     */
+    public function showForeignKey($name)
+    {
+        $data = DB::table($name)
+        ->select($name . '.name', $name . '.id')
+        ->get();
+        if ($data->isNotEmpty()) {
+            return response()->json([
+                'status' => 200,
+                'message' => $name . ' content detail.',
+                'data' => $data
+            ]);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => $name . ' not found.',
             ]);
         }
     }

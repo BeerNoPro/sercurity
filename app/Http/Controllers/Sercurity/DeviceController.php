@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sercurity;
 use App\Http\Controllers\Controller;
 use App\Models\Sercurity\Device;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class DeviceController extends Controller
@@ -14,14 +15,23 @@ class DeviceController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = Device::all();
+        $data = DB::table('device')
+        ->join('member', 'member.id', '=', 'device.member_id')
+        ->select('device.*', 'member.name as member_name')
+        ->paginate(6);
+        $page = 1;
+        if (isset($request->page)) {
+            $page = $request->page;
+        }
+        $index = ($page - 1) * 6 + 1;
         if ($data) {
             return response()->json([
                 'status' => 200,
                 'message' => 'Devices content list.',
-                'data' => $data
+                'data' => $data,
+                'index' => $index
             ]);
         } else {
             return response()->json([
@@ -72,8 +82,8 @@ class DeviceController extends Controller
                         'message' => 'Member not found. Register member please!',
                     ]);
                 } else {
-                    $data = Device::create($data);
-                    if ($data) {
+                    $result = Device::create($data);
+                    if ($result) {
                         return response()->json([
                             'status' => 200,
                             'message' => 'Device content created successfully.',
@@ -98,7 +108,11 @@ class DeviceController extends Controller
      */
     public function show($id)
     {
-        $data = Device::find($id);
+        $data = DB::table('device')
+        ->join('member', 'member.id', '=', 'device.member_id')
+        ->select('device.*', 'member.name as member_name')
+        ->where('device.id', $id)
+        ->get();
         if (is_null($data)) {
             return response()->json([
                 'status' => 404,
@@ -135,18 +149,33 @@ class DeviceController extends Controller
                     'data' => $data
                 ]);
             } else {
-                $result = $data->update($request->all());
-                if ($result) {
-                    return response()->json([
-                        'status' => 200,
-                        'message' => 'Device updated successfully.',
-                        'data' => $data
-                    ]);
-                } else {
+                $input = $request->all();
+                $validator = Validator::make($input, [
+                    'ip_address' => 'required',
+                    'user_login' => 'required',
+                    'version_virus' => 'required',
+                    'member_id' => 'required',
+                ]);
+                if($validator->fails()){ 
                     return response()->json([
                         'status' => 400,
-                        'message' => 'Device updated fail.'
+                        'message' => 'Please fill out the information completely.',
+                        'error' => $validator->errors()
                     ]);
+                } else {
+                    $result = $data->update($request->all());
+                    if ($result) {
+                        return response()->json([
+                            'status' => 200,
+                            'message' => 'Device updated successfully.',
+                            'data' => $data
+                        ]);
+                    } else {
+                        return response()->json([
+                            'status' => 400,
+                            'message' => 'Device updated fail.'
+                        ]);
+                    }
                 }
             }
         } else {
@@ -165,7 +194,17 @@ class DeviceController extends Controller
      */
     public function search($user_login)
     {
-        $data = Device::where('user_login','like','%'.$user_login.'%')->get();
+        $data = DB::table('device')
+        ->join('member', 'member.id', '=', 'device.member_id')
+        ->select('device.*', 'member.name as member_name')
+        ->where('device.user_login','like','%'.$user_login.'%')
+        ->get();
+        return response()->json([
+            'status' => 200,
+            'message' => 'Device content detail.',
+            'data' => $data
+        ]);die();
+
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
@@ -176,6 +215,31 @@ class DeviceController extends Controller
             return response()->json([
                 'status' => 404,
                 'message' => 'Device content not found.',
+            ]);
+        }
+    }
+
+    /**
+     * Select the specified resource from storage.
+     *
+     * @param  int  $name
+     * @return \Illuminate\Http\Response
+     */
+    public function showForeignKey()
+    {
+        $data = DB::table('member')
+        ->select('member.name', 'member.id')
+        ->get();
+        if ($data->isNotEmpty()) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Member content detail.',
+                'data' => $data
+            ]);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Member not found.',
             ]);
         }
     }
