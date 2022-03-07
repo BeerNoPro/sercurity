@@ -17,11 +17,7 @@ class MemberProjectController extends Controller
      */
     public function index(Request $request)
     {
-        $data = DB::table('member_project')
-        ->join('project', 'project.id', '=', 'member_project.project_id')
-        ->join('member', 'member.id', '=', 'member_project.member_id')
-        ->select('member_project.*', 'project.name as project_name', 'project.id as project_id', 'member.name as member_name', 'member.id as member_id')
-        ->paginate(6);
+        $data = MemberProject::with('project')->with('member')->paginate(6);
         $page = 1;
         if (isset($request->page)) {
             $page = $request->page;
@@ -30,14 +26,14 @@ class MemberProjectController extends Controller
         if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Member projects list.',
+                'message' => 'Data projects list.',
                 'data' => $data,
                 'index' => $index
             ]);
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Member project not found.'
+                'message' => 'Data project not found.'
             ]);
         }
     }
@@ -94,24 +90,21 @@ class MemberProjectController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request)
+    public function edit($project_id, $member_id)
     {
-        $data = DB::table('member_project')
-        ->join('project', 'project.id', '=', 'member_project.project_id')
-        ->join('member', 'member.id', '=', 'member_project.member_id')
-        ->select('member_project.*', 'project.id as project_id', 'project.name as project_name', 'member.id as member_id', 'member.name as member_name')
-        ->where('project_id', $request->project_id)
-        ->where('member_id', $request->member_id)
+        $data = MemberProject::with('project')->with('member')
+        ->where('member_project.project_id', $project_id)
+        ->where('member_project.member_id', $member_id)
         ->get();
         if ($data->isEmpty()) {
             return response()->json([
                 'status' => 404,
-                'message' => 'Project not found.',
+                'message' => 'Data not found.',
             ]);
         }
         return response()->json([
             'status' => 200,
-            'message' => 'Project content detail.',
+            'message' => 'Data content detail.',
             'data' => $data
         ]);
     }
@@ -181,21 +174,32 @@ class MemberProjectController extends Controller
      */
     public function search($name)
     {
-        $data = DB::table('member_project')
-        ->join('project', 'project.id', '=', 'member_project.project_id')
-        ->join('member', 'member.id', '=', 'member_project.member_id')
-        ->select('member_project.*', 'project.id as project_id', 'project.name as project_name', 'member.id as member_id', 'member.name as member_name')
-        ->where('project.name','like','%'.$name.'%')->get();
+        $data = MemberProject::query()->with([
+            'project' => function ($query) use ($name) {
+                $query->where('project.name','like','%'.$name.'%');
+            }
+        ])->with('member')->get();
+
+        // Filter value == null
+        function filterResult($data)
+        {
+            for ($i = 0; $i < sizeof($data); $i++) {
+                if (is_null($data[$i]->project)) unset($data[$i]);
+            }
+            return $data;
+        }
+        filterResult($data);
+
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Member project content detail.',
-                'data' => $data
+                'message' => 'Data content detail.',
+                'data' => $data,
             ]);
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Member project not found.'
+                'message' => 'Data not found.'
             ]);
         }
     }

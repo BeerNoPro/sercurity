@@ -17,10 +17,7 @@ class TrainingController extends Controller
      */
     public function index(Request $request)
     {
-        $data = DB::table('training')
-        ->join('member', 'member.id', '=', 'training.trainer')
-        ->join('project', 'project.id', '=', 'training.project_id')
-        ->select('training.*', 'member.name as trainer_name', 'project.name as project_name')
+        $data = Training::with('project')->with('member')
         ->paginate(6);
         $page = 1;
         if (isset($request->page)) {
@@ -53,9 +50,9 @@ class TrainingController extends Controller
         $data = $request->all();
         // check record exists in database?
         $check = Training::where('trainer', $request->trainer)
-                        ->where('project_id', $request->project_id)
-                        ->where('content', $request->content)
-                        ->count();
+        ->where('project_id', $request->project_id)
+        ->where('content', $request->content)
+        ->count();
         if($check > 0 ) { 
             return response()->json([
                 'status' => 200,
@@ -106,25 +103,56 @@ class TrainingController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function edit($id, $trainer_id = false, $project_id = false)
     {
-        $data = DB::table('training')
-        ->join('member', 'member.id', '=', 'training.trainer')
-        ->join('project', 'project.id', '=', 'training.project_id')
-        ->select('training.*', 'member.name as trainer_name', 'project.name as project_name')
-        ->where('training.id', $id)
-        ->get();
-        if (is_null($data)) {
+        if ($trainer_id && $project_id == false) {
+            $data = Training::with('member')
+            ->where('training.id', $id)
+            ->where('training.trainer', $trainer_id)
+            ->get();
+            if (is_null($data)) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Trainer not found.'
+                ]);
+            }
             return response()->json([
-                'status' => 404,
-                'message' => 'Training not found.'
+                'status' => 200,
+                'message' => 'Trainer content detail.',
+                'data' => $data
+            ]);
+        } else if ($project_id) {
+            $data = Training::with('project')
+            ->where('training.id', $id)
+            ->where('training.project_id', $project_id)
+            ->get();
+            if (is_null($data)) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Project not found.'
+                ]);
+            }
+            return response()->json([
+                'status' => 200,
+                'message' => 'Project content detail.',
+                'data' => $data
+            ]);
+        } else {
+            $data = Training::with('member')->with('project')
+            ->where('training.id', $id)
+            ->get();
+            if (is_null($data)) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Training not found.'
+                ]);
+            }
+            return response()->json([
+                'status' => 200,
+                'message' => 'Training content detail.',
+                'data' => $data
             ]);
         }
-        return response()->json([
-            'status' => 200,
-            'message' => 'Training content detail.',
-            'data' => $data
-        ]);
     }
 
     /**
@@ -140,9 +168,9 @@ class TrainingController extends Controller
         if ($data) {
             // check record exists in database?
             $check = Training::where('trainer', $request->trainer)
-                            ->where('project_id', $request->project_id)
-                            ->where('content', $request->content)
-                            ->count();
+            ->where('project_id', $request->project_id)
+            ->where('content', $request->content)
+            ->count();
             if ($check > 0) {
                 return response()->json([
                     'status' => 200,
@@ -193,12 +221,22 @@ class TrainingController extends Controller
      */
     public function search($name)
     {
-        $data = DB::table('training')
-        ->join('member', 'member.id', '=', 'training.trainer')
-        ->join('project', 'project.id', '=', 'training.project_id')
-        ->select('training.*', 'member.name as trainer_name', 'project.name as project_name')
-        ->where('member.name','like','%'.$name.'%')
-        ->get();
+        $data = Training::query()->with([
+            'member' => function ($query) use ($name) {
+                $query->where('member.name','like','%'.$name.'%');
+            }
+        ])->get();
+
+        // Filter value == null
+        function filterResult($data)
+        {
+            for ($i = 0; $i < sizeof($data); $i++) {
+                if (is_null($data[$i]->member)) unset($data[$i]);
+            }
+            return $data;
+        }
+        filterResult($data);
+
         if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,

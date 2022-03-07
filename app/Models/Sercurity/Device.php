@@ -4,6 +4,7 @@ namespace App\Models\Sercurity;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Device extends Model
 {
@@ -21,4 +22,12 @@ class Device extends Model
         'member_id',
         'deleted_at'
     ];
+
+    // Get content member
+    public function member() {
+        return $this->belongsTo('App\Models\Sercurity\Member')
+        ->join('company', 'company.id', '=', 'member.company_id')
+        ->select('member.*', 'company.id as company_parent_id', 'company.name as company_name', 'company.address as company_address', 'company.email as company_email');
+    }
+    
 }

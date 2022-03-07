@@ -17,11 +17,7 @@ class CarbinetController extends Controller
      */
     public function index(Request $request)
     {
-        $data = DB::table('carbinet')
-        ->join('work_room', 'work_room.id', '=', 'carbinet.work_room_id')
-        ->join('member', 'member.id', '=', 'carbinet.member_id')
-        ->select('carbinet.*', 'member.name as member_name', 'work_room.name as work_room_name')
-        ->paginate(6);
+        $data = Carbinet::with('workRoom')->with('member')->paginate(6);
         $page = 1;
         if (isset($request->page)) {
             $page = $request->page;
@@ -52,11 +48,11 @@ class CarbinetController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-        // check record exists in database?
+        // Check record exists in database?
         $check = Carbinet::where('name', $request->name)
-                        ->where('work_room_id', $request->work_room_id)
-                        ->where('member_id', $request->member_id)
-                        ->count();
+        ->where('work_room_id', $request->work_room_id)
+        ->where('member_id', $request->member_id)
+        ->count();
         if($check > 0 ) { 
             return response()->json([
                 'status' => 200,
@@ -106,25 +102,56 @@ class CarbinetController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function edit($id, $work_room_id = false, $member_id = false)
     {
-        $data = DB::table('carbinet')
-        ->join('work_room', 'work_room.id', '=', 'carbinet.work_room_id')
-        ->join('member', 'member.id', '=', 'carbinet.member_id')
-        ->select('carbinet.*', 'member.name as member_name', 'work_room.name as work_room_name')
-        ->where('carbinet.id', $id)
-        ->get();
-        if (is_null($data)) {
+        if ($work_room_id && $member_id == false) {
+            $data = Carbinet::with('workRoom')
+            ->where('carbinet.id', $id)
+            ->where('carbinet.work_room_id', $work_room_id)
+            ->get();
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Work room content not found.'
+                ]);
+            }
             return response()->json([
-                'status' => 404,
-                'message' => 'Cabinet content not found.'
+                'status' => 200,
+                'message' => 'Work room content detail.',
+                'data' => $data
+            ]);
+        } elseif ($member_id) {
+            $data = Carbinet::with('member')
+            ->where('carbinet.id', $id)
+            ->where('carbinet.member_id', $member_id)
+            ->get();
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Member content not found.'
+                ]);
+            }
+            return response()->json([
+                'status' => 200,
+                'message' => 'Member content detail.',
+                'data' => $data
+            ]);
+        } else {
+            $data = Carbinet::with('workRoom')->with('member')
+            ->where('carbinet.id', $id)
+            ->get();
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Cabinet content not found.'
+                ]);
+            }
+            return response()->json([
+                'status' => 200,
+                'message' => 'Cabinet content detail.',
+                'data' => $data
             ]);
         }
-        return response()->json([
-            'status' => 200,
-            'message' => 'Cabinet content detail.',
-            'data' => $data
-        ]);
     }
 
     /**
@@ -140,9 +167,9 @@ class CarbinetController extends Controller
         if ($data) {
             // check record exists in database?
             $check = Carbinet::where('name', $request->name)
-                            ->where('work_room_id', $request->work_room_id)
-                            ->where('member_id', $request->member_id)
-                            ->count();
+            ->where('work_room_id', $request->work_room_id)
+            ->where('member_id', $request->member_id)
+            ->count();
             if ($check > 0) {
                 return response()->json([
                     'status' => 200,
@@ -195,10 +222,7 @@ class CarbinetController extends Controller
     public function search($name)
     {
         // $data = Carbinet::where('name','like','%'.$name.'%')->get();
-        $data = DB::table('carbinet')
-        ->join('work_room', 'work_room.id', '=', 'carbinet.work_room_id')
-        ->join('member', 'member.id', '=', 'carbinet.member_id')
-        ->select('carbinet.*', 'member.name as member_name', 'work_room.name as work_room_name')
+        $data = Carbinet::with('workRoom')->with('member')
         ->where('carbinet.name','like','%'.$name.'%')
         ->get();
         if ($data->isNotEmpty()) {

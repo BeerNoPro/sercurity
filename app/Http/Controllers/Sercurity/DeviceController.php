@@ -17,10 +17,12 @@ class DeviceController extends Controller
      */
     public function index(Request $request)
     {
-        $data = DB::table('device')
-        ->join('member', 'member.id', '=', 'device.member_id')
-        ->select('device.*', 'member.name as member_name')
+        $data = Device::with('member')
         ->paginate(6);
+
+        // $data = Device::with('company')
+        // ->paginate(6);
+
         $page = 1;
         if (isset($request->page)) {
             $page = $request->page;
@@ -52,10 +54,10 @@ class DeviceController extends Controller
         $data = $request->all();
         // check record exists in database?
         $check = Device::where('ip_address', $request->ip_address)
-                        ->where('ip_mac', $request->ip_mac)
-                        ->where('user_login', $request->user_login)
-                        ->where('member_id', $request->member_id)
-                        ->count();
+        ->where('ip_mac', $request->ip_mac)
+        ->where('user_login', $request->user_login)
+        ->where('member_id', $request->member_id)
+        ->count();
         if($check > 0 ) { 
             return response()->json([
                 'status' => 200,
@@ -106,24 +108,40 @@ class DeviceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function edit($id, $member_id = false)
     {
-        $data = DB::table('device')
-        ->join('member', 'member.id', '=', 'device.member_id')
-        ->select('device.*', 'member.name as member_name')
-        ->where('device.id', $id)
-        ->get();
-        if (is_null($data)) {
+        if ($member_id) {
+            $data = Device::with('member')
+            ->where('device.id', $id)
+            ->where('device.member_id', $member_id)
+            ->get();
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Member content not found.'
+                ]);
+            }
             return response()->json([
-                'status' => 404,
-                'message' => 'Device content not found.'
+                'status' => 200,
+                'message' => 'Member content detail.',
+                'data' => $data
+            ]);
+        } else {
+            $data = Device::with('member')
+            ->where('device.id', $id)
+            ->get();
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Device content not found.'
+                ]);
+            }
+            return response()->json([
+                'status' => 200,
+                'message' => 'Device content detail.',
+                'data' => $data
             ]);
         }
-        return response()->json([
-            'status' => 200,
-            'message' => 'Device content detail.',
-            'data' => $data
-        ]);
     }
 
     /**
@@ -139,9 +157,9 @@ class DeviceController extends Controller
         if ($data) {
             // check record exists in database?
             $check = Device::where('ip_address', $request->ip_address)
-                            ->where('user_login', $request->user_login)
-                            ->where('member_id', $request->member_id)
-                            ->count();
+            ->where('user_login', $request->user_login)
+            ->where('member_id', $request->member_id)
+            ->count();
             if ($check > 0) {
                 return response()->json([
                     'status' => 200,
@@ -192,18 +210,23 @@ class DeviceController extends Controller
      * @param  int  $name
      * @return \Illuminate\Http\Response
      */
-    public function search($user_login)
+    public function search($name)
     {
-        $data = DB::table('device')
-        ->join('member', 'member.id', '=', 'device.member_id')
-        ->select('device.*', 'member.name as member_name')
-        ->where('device.user_login','like','%'.$user_login.'%')
-        ->get();
-        return response()->json([
-            'status' => 200,
-            'message' => 'Device content detail.',
-            'data' => $data
-        ]);die();
+        $data = Device::query()->with([
+            'member' => function ($query) use ($name) {
+                $query->where('member.name','like','%'.$name.'%');
+            }
+        ])->get();
+
+        // Filter value == null
+        function filterResult($data)
+        {
+            for ($i = 0; $i < sizeof($data); $i++) {
+                if (is_null($data[$i]->member)) unset($data[$i]);
+            }
+            return $data;
+        }
+        filterResult($data);
 
         if ($data->isNotEmpty()) {
             return response()->json([
@@ -214,7 +237,7 @@ class DeviceController extends Controller
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Device content not found.',
+                'message' => 'Device content not found.'
             ]);
         }
     }

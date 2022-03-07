@@ -19,4 +19,15 @@ class MemberProject extends Model
         'time_member_completed',
         'deleted_at'
     ];
+
+    // Get content member
+    public function member() {
+        return $this->belongsTo('App\Models\Sercurity\Member');
+    }
+
+    // Get content project
+    public function project() {
+        return $this->belongsTo('App\Models\Sercurity\Project');
+    }
+    
 }

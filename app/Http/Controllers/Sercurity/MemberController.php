@@ -17,10 +17,7 @@ class MemberController extends Controller
      */
     public function index(Request $request)
     {
-        $data = DB::table('member')
-        ->join('company', 'company.id', '=', 'member.company_id')
-        ->select('member.*', 'company.name as company_name')
-        ->paginate(6);
+        $data = Member::with('company')->paginate(6);
         $page = 1;
         if (isset($request->page)) {
             $page = $request->page;
@@ -50,13 +47,13 @@ class MemberController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-        // check record exists in database?
+        // Check record exists in database?
         $check = Member::where('name', $request->name)
-                        ->where('email', $request->email)
-                        ->where('address', $request->address)
-                        ->where('date_join_company', $request->date_join_company)
-                        ->where('company_id', $request->company_id)
-                        ->count();
+        ->where('email', $request->email)
+        ->where('address', $request->address)
+        ->where('date_join_company', $request->date_join_company)
+        ->where('company_id', $request->company_id)
+        ->count();
         if($check > 0 ) {
             return response()->json([
                 'status' => 200,
@@ -110,24 +107,40 @@ class MemberController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function edit($id, $company_id = false)
     {
-        $data = DB::table('member')
-        ->join('company', 'company.id', '=', 'member.company_id')
-        ->select('member.*', 'company.name as company_name')
-        ->where('member.id', $id)
-        ->get();
-        if (is_null($data)) {
+        if ($company_id) {
+            $data = Member::with('company')
+            ->where('member.id', $id)
+            ->where('member.company_id', $company_id)
+            ->get();
+            if (is_null($data)) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Company not found.'
+                ]);
+            }
             return response()->json([
-                'status' => 404,
-                'message' => 'Member not found.'
+                'status' => 200,
+                'message' => 'Company content detail.',
+                'data' => $data
+            ]);
+        } else {
+            $data = Member::with('company')
+            ->where('member.id', $id)
+            ->get();
+            if (is_null($data)) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Member not found.'
+                ]);
+            }
+            return response()->json([
+                'status' => 200,
+                'message' => 'Member content detail.',
+                'data' => $data
             ]);
         }
-        return response()->json([
-            'status' => 200,
-            'message' => 'Member content detail.',
-            'data' => $data
-        ]);
     }
 
     /**
@@ -189,11 +202,8 @@ class MemberController extends Controller
     public function search($name)
     {
         if ($name) {
-            $data = DB::table('member')
-            ->join('company', 'company.id', '=', 'member.company_id')
-            ->select('member.*', 'company.name as company_name')
-            ->where('member.name','like','%'.$name.'%')
-            ->get();
+            $data = Member::with('company')
+            ->where('member.name','like','%'.$name.'%')->get();
             if ($data->isNotEmpty()) {
                 return response()->json([
                     'status' => 200,

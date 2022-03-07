@@ -17,16 +17,20 @@ class TrainingRoomController extends Controller
      */
     public function index(Request $request)
     {
-        $data = DB::table('training_room')
-        ->join('training', 'training.id', '=', 'training_room.training_id')
-        ->join('member', 'member.id', '=', 'training_room.member_id')
-        ->select('training_room.*', 'member.id as trained_id', 'member.name as trained_name', 'training.trainer as trainer_id');
+        // $data = DB::table('training_room')
+        // ->join('training', 'training.id', '=', 'training_room.training_id')
+        // ->join('member', 'member.id', '=', 'training_room.member_id')
+        // ->select('training_room.*', 'member.id as trained_id', 'member.name as trained_name', 'training.trainer as trainer_id');
 
-        $data2 = DB::table('member')
-        ->joinSub($data, 'training_room', function ($join) {
-            $join->on('member.id', '=', 'training_room.trainer_id');
-        })
-        ->select('training_room.*', 'member.name as trainer_name')
+        // $data2 = DB::table('member')
+        // ->joinSub($data, 'training_room', function ($join) {
+        //     $join->on('member.id', '=', 'training_room.trainer_id');
+        // })
+        // ->select('training_room.*', 'member.name as trainer_name')
+        // ->paginate(6);
+
+        $data = TrainingRoom::with('training')
+        ->with('trained')
         ->paginate(6);
 
         $page = 1;
@@ -39,7 +43,7 @@ class TrainingRoomController extends Controller
             return response()->json([
                 'status' => 200,
                 'message' => 'Training rooms list.',
-                'data' => $data2,
+                'data' => $data,
                 'index' => $index,
             ]);
         } else {
@@ -104,23 +108,14 @@ class TrainingRoomController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request)
+    public function edit($training_id, $member_id)
     {
-        $data = DB::table('training_room')
-        ->join('training', 'training.id', '=', 'training_room.training_id')
-        ->join('member', 'member.id', '=', 'training_room.member_id')
-        ->select('training_room.*', 'member.id as trained_id', 'member.name as trained_name', 'training.trainer as trainer_id')
-        ->where('training_room.training_id', $request->training_id)
-        ->where('training_room.member_id', $request->member_id);
-
-        $data2 = DB::table('member')
-        ->joinSub($data, 'training_room', function ($join) {
-            $join->on('member.id', '=', 'training_room.trainer_id');
-        })
-        ->select('training_room.*', 'member.name as trainer_name')
+        $data = TrainingRoom::with('training')
+        ->with('trained')
+        ->where('training_room.training_id', $training_id)
+        ->where('training_room.member_id', $member_id)
         ->get();
-
-        if ($data2->isEmpty()) {
+        if ($data->isEmpty()) {
             return response()->json([
                 'status' => 404,
                 'message' => 'Training room not found.'
@@ -129,7 +124,32 @@ class TrainingRoomController extends Controller
             return response()->json([
                 'status' => 200,
                 'message' => 'Training room content detail.',
-                'data' => $data2
+                'data' => $data
+            ]);
+        }
+    }
+
+    /**
+     * Show the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function showMember($id)
+    {
+        $data = TrainingRoom::with('member')
+        ->where('training_room.member_id', $id)
+        ->get();
+        if ($data->isEmpty()) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Member not found.'
+            ]);
+        } else {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Member content detail.',
+                'data' => $data
             ]);
         }
     }
@@ -209,23 +229,27 @@ class TrainingRoomController extends Controller
      */
     public function search($name)
     {
-        $data = DB::table('training_room')
-        ->join('training', 'training.id', '=', 'training_room.training_id')
-        ->join('member', 'member.id', '=', 'training_room.member_id')
-        ->select('training_room.*', 'member.id as trained_id', 'member.name as trained_name', 'training.trainer as trainer_id');
-        $data2 = DB::table('member')
-        ->joinSub($data, 'training_room', function ($join) {
-            $join->on('member.id', '=', 'training_room.trainer_id');
-        })
-        ->select('training_room.*', 'member.name as trainer_name')
-        ->where('member.name', 'like', '%'.$name.'%')
-        ->get();
+        $data = TrainingRoom::query()->with([
+            'training' => function ($query) use ($name) {
+                $query->where('member.name','like','%'.$name.'%');
+            }
+        ])->get();
 
-        if ($data2->isNotEmpty()) {
+        // Filter value == null
+        function filterResult($data)
+        {
+            for ($i = 0; $i < sizeof($data); $i++) {
+                if (is_null($data[$i]->training)) unset($data[$i]);
+            }
+            return $data;
+        }
+        filterResult($data);
+
+        if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
                 'message' => 'Training room content detail.',
-                'data' => $data2
+                'data' => $data
             ]);
         } else {
             return response()->json([

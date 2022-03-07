@@ -38,31 +38,34 @@ Route::prefix('admin')->group(function () {
     // List route member
     Route::resource('/member', MemberController::class);
     Route::get('/member-foreign', [MemberController::class, 'showForeignKey']);
+    Route::get('/member-edit/{id}/{company_id?}', [MemberController::class, 'edit']);
     Route::post('/member/{id}', [MemberController::class, 'update']);
     Route::get('/member-search/{name}', [MemberController::class, 'search']);
     
     // List route project
     Route::resource('/project', ProjectController::class);
+    Route::get('/project-edit/{id}/{company_id?}/{work_room_id?}', [ProjectController::class, 'edit']);
     Route::post('/project/{id}', [ProjectController::class, 'update']);
     Route::get('/project-search/{name}', [ProjectController::class, 'search']);
     Route::get('/project-foreign/{name}', [ProjectController::class, 'showForeignKey']);
     
     // List route member project
     Route::resource('/member-project', MemberProjectController::class);
-    Route::post('/member-project-edit', [MemberProjectController::class, 'edit']);
+    Route::get('/member-project-edit/{id1}/{id2}', [MemberProjectController::class, 'edit']);
     Route::post('/member-project-update/{id1}/{id2}', [MemberProjectController::class, 'save']);
     Route::get('/member-project-search/{name}', [MemberProjectController::class, 'search']);
     Route::get('/member-project-foreign/{name}', [MemberProjectController::class, 'showForeignKey']);
     
     // List route training
     Route::resource('/training', TrainingController::class);
+    Route::get('/training-edit/{id}/{trainer_id?}/{project_id?}', [TrainingController::class, 'edit']);
     Route::post('/training/{id}', [TrainingController::class, 'update']);
     Route::get('/training-search/{name}', [TrainingController::class, 'search']);
     Route::get('/training-foreign/{name}', [TrainingController::class, 'showForeignKey']);
 
     // List route training room
     Route::resource('/training-room', TrainingRoomController::class);
-    Route::post('/training-room-edit', [TrainingRoomController::class, 'edit']);
+    Route::get('/training-room-edit/{id1}/{id2}', [TrainingRoomController::class, 'edit']);
     Route::post('/training-room-update/{id1}/{id2}', [TrainingRoomController::class, 'save']);
     Route::get('/training-room-search/{name}', [TrainingRoomController::class, 'search']);
     Route::get('/training-room-foreign/{name}', [TrainingRoomController::class, 'showForeignKey']);
@@ -70,12 +73,14 @@ Route::prefix('admin')->group(function () {
 
     // List route Device
     Route::resource('/device', DeviceController::class);
+    Route::get('/device-edit/{id}/{member_id?}', [DeviceController::class, 'edit']);
     Route::post('/device/{id}', [DeviceController::class, 'update']);
     Route::get('/device-foreign', [DeviceController::class, 'showForeignKey']);
-    Route::get('/device-search/{user_login}', [DeviceController::class, 'search']);
+    Route::get('/device-search/{name}', [DeviceController::class, 'search'])->where('name', '(.*)');
 
     // List route carbinet
     Route::resource('/carbinet', CarbinetController::class);
+    Route::get('/carbinet-edit/{id}/{work_room_id?}/{member_id?}', [CarbinetController::class, 'edit']);
     Route::post('/carbinet/{id}', [CarbinetController::class, 'update']);
     Route::get('/carbinet-foreign/{name}', [CarbinetController::class, 'showForeignKey']);
     Route::get('/carbinet-search/{name}', [CarbinetController::class, 'search']);
@@ -84,34 +89,13 @@ Route::prefix('admin')->group(function () {
 
 Route::prefix('view')->group(function () {
     // Show lists content
-    Route::get('/', [ShowListController::class, 'showListProject']);
+    Route::get('/home/{id?}', [ShowListController::class, 'home']);
 
-    // Show lists content company detail
-    Route::get('/company/{id}', [ShowListController::class, 'companyDetail']);
-
-    // Show lists content work-room detail
-    Route::get('/work-room/{id}', [ShowListController::class, 'workRoomDetail']);
+    // Show lists content table company and work room
+    Route::get('/company-workroom/{name}/{id}', [ShowListController::class, 'companyAndWorkRoom']);
 
     // Show lists content member detail
-    Route::get('/member/{id}', [ShowListController::class, 'memberDetail']);
-    
-    // Show lists content project detail
-    Route::get('/project/{id}', [ShowListController::class, 'projectDetail']);
-
-    // Show lists content member project detail
-    Route::get('/member-project/{member_id}/{project_id}', [ShowListController::class, 'memberProjectDetail']);
-
-    // Show lists content training detail
-    Route::get('/training/{id}', [ShowListController::class, 'trainingDetail']);
-
-    // Show lists content training room detail
-    Route::get('/training-room/{training_id}/{member_id}', [ShowListController::class, 'trainingRoomDetail']);
-
-    // Show lists content device detail
-    Route::get('/device/{id}', [ShowListController::class, 'deviceDetail']);
-
-    // Show lists content carbinet detail
-    Route::get('/carbinet/{id}', [ShowListController::class, 'carbinetDetail']);
+    Route::get('/member/{id}', [ShowListController::class, 'member']);
 });
 
 

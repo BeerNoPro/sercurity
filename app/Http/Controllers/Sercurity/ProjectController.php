@@ -17,11 +17,7 @@ class ProjectController extends Controller
      */
     public function index(Request $request)
     {
-        $data = DB::table('project')
-        ->join('company', 'company.id', '=', 'project.company_id')
-        ->join('work_room', 'work_room.id', '=', 'project.work_room_id')
-        ->select('project.*', 'company.name as company_name', 'work_room.name as work_room_name', 'work_room.location as work_room_location')
-        ->paginate(6);
+        $data = Project::with('company')->with('workRoom')->paginate(6);
         $page = 1;
         if (isset($request->page)) {
             $page = $request->page;
@@ -51,12 +47,12 @@ class ProjectController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-        // check record exists in database?
+        // Check record exists in database?
         $check = Project::where('name', $request->name)
-                        ->where('time_start', $request->time_start)
-                        ->where('company_id', $request->company_id)
-                        ->where('work_room_id', $request->work_room_id)
-                        ->count();
+        ->where('time_start', $request->time_start)
+        ->where('company_id', $request->company_id)
+        ->where('work_room_id', $request->work_room_id)
+        ->count();
         if($check > 0 ) { 
             return response()->json([
                 'status' => 200,
@@ -108,25 +104,56 @@ class ProjectController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function edit($id, $company_id = false, $work_room_id = false)
     {
-        $data = DB::table('project')
-        ->join('company', 'company.id', '=', 'project.company_id')
-        ->join('work_room', 'work_room.id', '=', 'project.work_room_id')
-        ->select('project.*', 'company.name as company_name', 'work_room.name as work_room_name', 'work_room.location as work_room_location')
-        ->where('project.id', $id)
-        ->get();
-        if (is_null($data)) {
+        if ($company_id && $work_room_id == false) {
+            $data = Project::with('company')->with('workRoom')
+            ->where('project.id', $id)
+            ->where('project.company_id', $company_id)
+            ->get();
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Company not found.'
+                ]);
+            }
             return response()->json([
-                'status' => 404,
-                'message' => 'Project not found.'
+                'status' => 200,
+                'message' => 'Company content detail.',
+                'data' => $data
+            ]);
+        } else if ($work_room_id) {
+            $data = Project::with('company')->with('workRoom')
+            ->where('project.id', $id)
+            ->where('project.work_room_id', $work_room_id)
+            ->get();
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Work room not found.'
+                ]);
+            }
+            return response()->json([
+                'status' => 200,
+                'message' => 'Work room content detail.',
+                'data' => $data
+            ]);
+        } else {
+            $data = Project::with('company')->with('workRoom')
+            ->where('project.id', $id)
+            ->get();
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Project not found.'
+                ]);
+            }
+            return response()->json([
+                'status' => 200,
+                'message' => 'Project content detail.',
+                'data' => $data
             ]);
         }
-        return response()->json([
-            'status' => 200,
-            'message' => 'Project content detail.',
-            'data' => $data
-        ]);
     }
 
     /**
@@ -196,10 +223,7 @@ class ProjectController extends Controller
      */
     public function search($name)
     {
-        $data = DB::table('project')
-        ->join('company', 'company.id', '=', 'project.company_id')
-        ->join('work_room', 'work_room.id', '=', 'project.work_room_id')
-        ->select('project.*', 'company.name as company_name', 'work_room.name as work_room_name', 'work_room.location as work_room_location')
+        $data = Project::with('company')->with('workRoom')
         ->where('project.name','like','%'.$name.'%')
         ->get();
         if ($data->isNotEmpty()) {

@@ -23,4 +23,10 @@ class Member extends Model
         'company_id',
         'deleted_at'
     ];
+
+    // Get name company
+    public function company() {
+        return $this->belongsTo('App\Models\Sercurity\Company');
+    }
+
 }

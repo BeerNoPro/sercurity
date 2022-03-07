@@ -16,4 +16,12 @@ class WorkRoom extends Model
         'location',
         'deleted_at'
     ];
+
+    public function project()
+    {
+        return $this->hasManyThrough(
+            'App\Models\Sercurity\MemberProject',
+            'App\Models\Sercurity\Project', 
+        );
+    }
 }
