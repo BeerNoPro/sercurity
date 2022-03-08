@@ -241,7 +241,7 @@ class TrainingRoomController extends Controller
             for ($i = 0; $i < sizeof($data); $i++) {
                 if (is_null($data[$i]->training)) unset($data[$i]);
             }
-            return $data;
+            return array($data);
         }
         filterResult($data);
 
