@@ -13,7 +13,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        // // Security Repository
+        // $this->app->singleton(
+        //     \App\Repositories\RepositoryInterface::class,
+        //     \App\Repositories\EloquentRepository::class,
+        //     // \App\Repositories\Company\CompanyRepository::class,
+        // );
+        
     }
 
     /**

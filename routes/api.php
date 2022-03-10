@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Sercurity\DemoController;
 use App\Http\Controllers\Sercurity\CarbinetController;
 use App\Http\Controllers\Sercurity\CompanyController;
 use App\Http\Controllers\Sercurity\DeviceController;
@@ -96,6 +97,9 @@ Route::prefix('view')->group(function () {
 
     // Show lists content member detail
     Route::get('/member/{id}', [ShowListController::class, 'member']);
+
+    // Search name company get list content
+    Route::get('/search/{name}', [ShowListController::class, 'search']);
 });
 
 

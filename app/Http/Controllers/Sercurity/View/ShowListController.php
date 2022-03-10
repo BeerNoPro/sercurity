@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Sercurity\View;
 
 use App\Http\Controllers\Controller;
+use App\Models\Sercurity\Company;
 use App\Models\Sercurity\Member;
 use App\Models\Sercurity\Project;
 use Illuminate\Http\Request;
@@ -15,6 +16,7 @@ class ShowListController extends Controller
     {
         if ($id) {
             $data = Project::with('company')
+            ->with('member')
             ->with('workRoom')
             ->where('project.id', $id)
             ->get();
@@ -91,6 +93,38 @@ class ShowListController extends Controller
             return response()->json([
                 'status' => 404,
                 'message' => 'Member content not found.',
+            ]);
+        }
+    }
+
+    public function search($name)
+    {
+        $data = Project::query()->with([
+            'company' => function ($query) use ($name) {
+                $query->where('company.name','like','%'.$name.'%');
+            }
+        ])->get();
+
+        // Filter value == null
+        function filterResult($data)
+        {
+            for ($i = 0; $i < sizeof($data); $i++) {
+                if (is_null($data[$i]->company)) unset($data[$i]);
+            }
+            return array($data);
+        }
+        filterResult($data);
+
+        if ($data->isNotEmpty()) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Data content detail.',
+                'data' => $data
+            ]);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Data not found.'
             ]);
         }
     }

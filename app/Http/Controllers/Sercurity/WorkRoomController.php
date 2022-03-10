@@ -3,21 +3,22 @@
 namespace App\Http\Controllers\Sercurity;
 
 use App\Http\Controllers\Controller;
-use App\Models\Sercurity\WorkRoom;
+use App\Http\Requests\SecurityRequest\WorkRoomRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+use App\Repositories\WorkRoom\WorkRoomRepository;
 
 class WorkRoomController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    protected $workRoomRepository;
+
+    public function __construct(WorkRoomRepository $workRoomRepository)
+    {
+        $this->workRoomRepository = $workRoomRepository;
+    }
+
     public function index(Request $request)
     {
-        $data = DB::table('work_room')->paginate(6);
+        $data = $this->workRoomRepository->getAll();
         $page = 1;
         if (isset($request->page)) {
             $page = $request->page;
@@ -26,151 +27,83 @@ class WorkRoomController extends Controller
         if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Work rooms list.',
+                'message' => 'Data lists content.',
                 'data' => $data,
-                'index' => $index
+                'index' => $index,
             ]);
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Work room not found.'
+                'message' => 'Data not found.'
             ]);
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $data = $request->all();
-        // check record exists in database?
-        $check = WorkRoom::where('name', $request->name)
-                        ->where('location', $request->location)
-                        ->count();
-        if($check > 0 ) { 
-            return response()->json([
-                'status' => 200,
-                'message' => 'Work room created successfully.',
-                'data' => $data
-            ]);
-        } else { 
-            $validator = Validator::make($data, [
-                'name' => 'required',
-                'location' => 'required',
-            ]);
-            if($validator->fails()){ 
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Please fill out the information completely',
-                    'error' => $validator->errors()
-                ]);
-            }
-            $data = WorkRoom::create($data);
-            if ($data) {
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Work room created successfully.',
-                    'data' => $data
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 404,
-                    'message' => 'Work room created fail.',
-                ]);
-            }
-        }
-    }
-
-    /**
-     * Show the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        $data = WorkRoom::find($id);
-        if (is_null($data)) {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Work room not found.'
-            ]);
-        }
-        return response()->json([
-            'status' => 200,
-            'message' => 'Work room content detail.',
-            'data' => $data
-        ]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        $data = WorkRoom::find($id);
+        $data = $this->workRoomRepository->find($id);
         if ($data) {
-            $input = $request->all();
-            $validator = Validator::make($input, [
-                'name' => 'required',
-                'location' => 'required',
-            ]);
-            if($validator->fails()){ 
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Please fill out the information completely',
-                    'error' => $validator->errors()
-                ]);
-            } else {
-                $result = $data->update($request->all());
-                if ($result) {
-                    return response()->json([
-                        'status' => 200,
-                        'message' => 'Work room updated successfully.',
-                        'data' => $data,
-                    ]);
-                } else {
-                    return response()->json([
-                        'status' => 400,
-                        'message' => 'Work room updated fail.'
-                    ]);
-                }
-            }
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Work room not found.'
-            ]);
-        }
-    }
-
-    /**
-     * Search the specified resource from storage.
-     *
-     * @param  int  $name
-     * @return \Illuminate\Http\Response
-     */
-    public function search($name)
-    {
-        $data = WorkRoom::where('name','like','%'.$name.'%')->get();
-        if ($data->isNotEmpty()) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Work room content detail.',
-                'data' => $data
+                'message' => 'Data content list detail.',
+                'data' => $data,
             ]);
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Work room not found.'
+                'message' => 'Data content detail not found.',
+            ]);
+        }
+    }
+
+    public function store(WorkRoomRequest $request)
+    {
+        $data = $request->all();
+        $result = $this->workRoomRepository->create($data);
+        if ($result) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Data created success.',
+                'data' => $data,
+            ]);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Data created fail.'
+            ]);
+        }
+    }
+
+    public function update(WorkRoomRequest $request, $id)
+    {
+        $data = $request->all();
+        $result = $this->workRoomRepository->update($id, $data);
+        if ($result) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Data updated success.',
+            ]);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Data updated fail.',
+            ]);
+        }
+    }
+
+    public function search($name) 
+    {
+        $data = $this->workRoomRepository->search($name);
+        if ($data) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Data content detail list.',
+                'data' => $data,
+            ]);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Data content detail not found.'
             ]);
         }
     }
