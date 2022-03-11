@@ -13,7 +13,7 @@ class TrainingRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,9 @@ class TrainingRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'trainer' => 'required',
+            'content' => 'required',
+            'project_id' => 'required',
         ];
     }
 }

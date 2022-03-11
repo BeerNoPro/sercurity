@@ -19,4 +19,7 @@ interface RepositoryInterface
     // Search data
     public function search($name);
 
+    // Get content foreign key
+    public function showForeignKey($name);
+
 }

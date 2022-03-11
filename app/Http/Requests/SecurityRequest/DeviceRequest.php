@@ -13,7 +13,7 @@ class DeviceRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,17 @@ class DeviceRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'ip_address' => 'required',
+            'user_login' => 'required|unique:device',
+            'version_virus' => 'required',
+            'member_id' => 'required|unique:device',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'member_id.required' => 'The member name has already been taken.',
         ];
     }
 }

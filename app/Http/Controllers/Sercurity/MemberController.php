@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Sercurity;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SecurityRequest\MemberRequest;
 use Illuminate\Http\Request;
 use App\Repositories\Member\MemberRepository;
+use App\Http\Requests\SecurityRequest\MemberRequest;
 
 class MemberController extends Controller
 {
@@ -39,9 +39,9 @@ class MemberController extends Controller
         }
     }
 
-    public function showForeignKey()
+    public function showForeignKey($name)
     {
-        $data = $this->memberRepository->showForeignKey();
+        $data = $this->memberRepository->showForeignKey($name);
         if ($data) {
             return response()->json([
                 'status' => 200,

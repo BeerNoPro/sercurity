@@ -13,7 +13,7 @@ class ProjectRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,11 @@ class ProjectRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'name' => 'required|unique:project|min:6|max:255',
+            'time_start' => 'required',
+            'time_completed' => 'required',
+            'company_id' => 'required',
+            'work_room_id' => 'required',
         ];
     }
 }

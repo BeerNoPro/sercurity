@@ -13,7 +13,7 @@ class MemberProjectRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,11 @@ class MemberProjectRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'project_id' => 'required',
+            'member_id' => 'required',
+            'role' => 'required',
+            'time_member_join' => 'required',
+            'time_member_completed' => 'required',
         ];
     }
 }

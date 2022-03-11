@@ -13,7 +13,7 @@ class CabinetRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,9 @@ class CabinetRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'name' => 'required',
+            'work_room_id' => 'required|unique:carbinet',
+            'member_id' => 'required|unique:carbinet',
         ];
     }
 }

@@ -3,7 +3,6 @@ namespace App\Repositories\Member;
 
 use App\Models\Sercurity\Member;
 use App\Repositories\EloquentRepository;
-use Illuminate\Support\Facades\DB;
 
 class MemberRepository extends EloquentRepository
 {
@@ -15,12 +14,6 @@ class MemberRepository extends EloquentRepository
     public function getAll()
     {
         $data = Member::with('company')->paginate(6);
-        return $data ? $data : false;
-    }
-
-    public function showForeignKey()
-    {
-        $data = DB::table('company')->select('company.id', 'company.name')->get();
         return $data ? $data : false;
     }
 

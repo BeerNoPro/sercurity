@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Repositories\RepositoryInterface;
+use Illuminate\Support\Facades\DB;
 
 abstract class EloquentRepository implements RepositoryInterface
 {
@@ -52,6 +53,12 @@ abstract class EloquentRepository implements RepositoryInterface
     public function search($name)
     {
         $data = $this->model->where('name','like','%'.$name.'%')->get();
+        return $data ? $data : false;
+    }
+
+    public function showForeignKey($name)
+    {
+        $data = DB::table($name)->select($name . '.id', $name . '.name')->get();
         return $data ? $data : false;
     }
     

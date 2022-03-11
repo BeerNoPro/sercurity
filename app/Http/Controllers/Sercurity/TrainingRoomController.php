@@ -3,303 +3,141 @@
 namespace App\Http\Controllers\Sercurity;
 
 use App\Http\Controllers\Controller;
-use App\Models\Sercurity\TrainingRoom;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+use App\Repositories\TrainingRoom\TrainingRoomRepository;
+use App\Http\Requests\SecurityRequest\TrainingRoomRequest;
 
 class TrainingRoomController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    protected $trainingRoomRepository;
+
+    public function __construct(TrainingRoomRepository $trainingRoomRepository)
+    {
+        $this->trainingRoomRepository = $trainingRoomRepository;
+    }
+
     public function index(Request $request)
     {
-        // $data = DB::table('training_room')
-        // ->join('training', 'training.id', '=', 'training_room.training_id')
-        // ->join('member', 'member.id', '=', 'training_room.member_id')
-        // ->select('training_room.*', 'member.id as trained_id', 'member.name as trained_name', 'training.trainer as trainer_id');
-
-        // $data2 = DB::table('member')
-        // ->joinSub($data, 'training_room', function ($join) {
-        //     $join->on('member.id', '=', 'training_room.trainer_id');
-        // })
-        // ->select('training_room.*', 'member.name as trainer_name')
-        // ->paginate(6);
-
-        $data = TrainingRoom::with('training')
-        ->with('trained')
-        ->paginate(6);
-
+        $data = $this->trainingRoomRepository->getAll();
         $page = 1;
         if (isset($request->page)) {
             $page = $request->page;
         }
         $index = ($page - 1) * 6 + 1;
-
         if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Training rooms list.',
+                'message' => 'Data lists content.',
                 'data' => $data,
                 'index' => $index,
             ]);
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Training room not found.'
+                'message' => 'Data not found.'
             ]);
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $data = $request->all();
-        $validator = Validator::make($data, [
-            'training_id' => 'required',
-            'member_id' => 'required',
-            'date_start' => 'required',
-            'date_completed' => 'required',
-            'result' => 'required',
-            'note' => 'required',
-        ]);
-        if($validator->fails()){ 
-            return response()->json([
-                'status' => 400,
-                'message' => 'Please fill out the information completely.',
-                'error' => $validator->errors()
-            ]);
-        } else {
-            if (is_null($request->training_id) || is_null($request->member_id)) {
-                return response()->json([
-                    'status' => 404,
-                    'message' => 'Check registered project or member, please!'
-                ]);
-            } else {
-                $result = TrainingRoom::create($request->all());
-                if ($result) {
-                    return response()->json([
-                        'status' => 200,
-                        'message' => 'Training room created successfully.',
-                        'data' => $data,
-                        'result' => $result
-                    ]);
-                } else {
-                    return response()->json([
-                        'status' => 400,
-                        'message' => 'Training room created fail.'
-                    ]);
-                }
-            }
-        }
-    }
-
-    /**
-     * Show the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($training_id, $member_id)
-    {
-        $data = TrainingRoom::with('training')
-        ->with('trained')
-        ->where('training_room.training_id', $training_id)
-        ->where('training_room.member_id', $member_id)
-        ->get();
-        if ($data->isEmpty()) {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Training room not found.'
-            ]);
-        } else {
-            return response()->json([
-                'status' => 200,
-                'message' => 'Training room content detail.',
-                'data' => $data
-            ]);
-        }
-    }
-
-    /**
-     * Show the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function showMember($id)
-    {
-        $data = TrainingRoom::with('member')
-        ->where('training_room.member_id', $id)
-        ->get();
-        if ($data->isEmpty()) {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Member not found.'
-            ]);
-        } else {
-            return response()->json([
-                'status' => 200,
-                'message' => 'Member content detail.',
-                'data' => $data
-            ]);
-        }
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function save(Request $request, $id1, $id2)
-    {
-        $training_id = $request->training_id;
-        $member_id = $request->member_id;
-        $data = DB::table('training_room')
-        ->where('training_id', $id1)
-        ->where('member_id', $id2)
-        ->get();
-        if ($data->isNotEmpty()) {
-            $input = $request->all();
-            $validator = Validator::make($input, [
-                'training_id' => 'required',
-                'member_id' => 'required',
-                'date_start' => 'required',
-                'date_completed' => 'required',
-                'result' => 'required',
-                'note' => 'required',
-            ]);
-            if($validator->fails()){ 
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Please fill out the information completely.',
-                    'error' => $validator->errors()
-                ]);
-            } else {
-                $result = TrainingRoom::where('training_id', $training_id)
-                ->where('member_id', $member_id)
-                ->update([
-                    'training_id' => $request->training_id,
-                    'member_id' => $request->member_id,
-                    'date_start' => $request->date_start,
-                    'date_completed' => $request->date_completed,
-                    'result' => $request->result,
-                    'note' => $request->note
-                ]);
-                if ($result) {
-                    return response()->json([
-                        'status' => 200,
-                        'message' => 'Training room updated successfully.',
-                    ]);
-                } else {
-                    return response()->json([
-                        'status' => 400,
-                        'message' => 'Training room update fail.',
-                        'data' => $data,
-                        'input' => $input,
-                        'result' => $result,
-                    ]);
-                }
-            }
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Training room not found.',
-                'data' => $data,
-                'request' => $request->all(),
-            ]);
-        }
-    }
-
-    /**
-     * Search the specified resource from storage.
-     *
-     * @param  int  $name
-     * @return \Illuminate\Http\Response
-     */
-    public function search($name)
-    {
-        $data = TrainingRoom::query()->with([
-            'training' => function ($query) use ($name) {
-                $query->where('member.name','like','%'.$name.'%');
-            }
-        ])->get();
-
-        // Filter value == null
-        function filterResult($data)
-        {
-            for ($i = 0; $i < sizeof($data); $i++) {
-                if (is_null($data[$i]->training)) unset($data[$i]);
-            }
-            return array($data);
-        }
-        filterResult($data);
-
-        if ($data->isNotEmpty()) {
-            return response()->json([
-                'status' => 200,
-                'message' => 'Training room content detail.',
-                'data' => $data
-            ]);
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Training room not found.'
-            ]);
-        }
-    }
-
-    /**
-     * Select the specified resource from storage.
-     *
-     * @param  int  $name
-     * @return \Illuminate\Http\Response
-     */
     public function showForeignKey($name)
     {
-
-        $data = DB::table($name)
-        ->select($name . '.name', $name . '.id')
-        ->get();
-        if ($data->isNotEmpty()) {
+        $data = $this->trainingRoomRepository->showForeignKey($name);
+        if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => $name . ' content detail.',
-                'data' => $data
+                'message' => 'Data lists content.',
+                'data' => $data,
             ]);
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => $name . ' not found.',
+                'message' => 'Data not found.'
             ]);
         }
     }
 
     public function showForeignKeySubQuery()
     {
-        $data = DB::table('training')
-        ->join('member', 'member.id', '=', 'training.trainer')
-        ->select('training.*', 'member.name as trainer_name')->get();
+        $data = $this->trainingRoomRepository->showForeignKeySubQuery();
         if ($data) {
             return response()->json([
                 'status' => 200,
-                'message' => 'Data content detail.',
-                'data' => $data
+                'message' => 'Data lists content.',
+                'data' => $data,
             ]);
         } else {
             return response()->json([
                 'status' => 404,
-                'message' => 'Data content not found.',
+                'message' => 'Data not found.'
+            ]);
+        }
+    }
+
+    public function edit($training_id, $member_id)
+    {
+        $data = $this->trainingRoomRepository->edit($training_id, $member_id);
+        if ($data) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Data lists content.',
+                'data' => $data,
+            ]);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Data not found.'
+            ]);
+        }
+    }
+
+    public function store(TrainingRoomRequest $request)
+    {
+        $data = $request->all();
+        $result = $this->trainingRoomRepository->create($data);
+        if ($result) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Data created success.',
+                'data' => $data,
+            ]);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Data created fail.'
+            ]);
+        }
+    }
+
+    public function update(TrainingRoomRequest $request, $training_id, $member_id)
+    {
+        $data = $request->all();
+        $result = $this->trainingRoomRepository->save($training_id, $member_id, $data);
+        if ($result) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Data updated success.',
+            ]);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Data updated fail.',
+            ]);
+        }
+    }
+
+    public function search($name)
+    {
+        $data = $this->trainingRoomRepository->search($name);
+        if ($data) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Data content detail list.',
+                'data' => $data,
+            ]);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Data content detail not found.'
             ]);
         }
     }
