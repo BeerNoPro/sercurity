@@ -34,4 +34,11 @@ class Project extends Model
     public function member() {
         return $this->belongsToMany('App\Models\Sercurity\Member');
     }
+
+    // Get content member and company
+    public function memberCompany() {
+        return $this->belongsToMany('App\Models\Sercurity\Member')
+        ->join('company', 'company.id', '=', 'member.company_id')
+        ->select('member.*', 'company.name as company_name', 'company.email as company_email', 'company.address as company_address', 'company.phone as company_phone', 'company.date_incorporation as company_date_incorporation');
+    }
 }

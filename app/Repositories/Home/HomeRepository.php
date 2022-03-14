@@ -10,30 +10,33 @@ class HomeRepository
     public function getAll($id = false)
     {
         if ($id) {
-            $data = Project::with('company')
+            $data = WorkRoom::with('project')
             ->with('member')
-            ->with('workRoom')
-            ->where('project.id', $id)
+            ->where('work_room.id', $id)
             ->get();
             return $data ? $data : false;
         } else {
-            $data = Project::with('company')
+            $data = WorkRoom::with('project')
             ->with('member')
-            ->with('workRoom')
             ->get();
             return $data ? $data : false;
         }
     }
 
-    public function getWorkRoom() {
-        // $data = DB::table('work_room')->get();
+    public function getWorkRoom() 
+    {
         $data = WorkRoom::with('project')
+        ->with('member')
         ->get();
         return $data ? $data : false;
     }
 
-    public function getMember() {
-        $data =Project::with('member')->get();
+    public function show($id) 
+    {
+        $data = WorkRoom::with('project')
+            ->with('member')
+            ->where('work_room.id', $id)
+            ->get();
         return $data ? $data : false;
     }
 }

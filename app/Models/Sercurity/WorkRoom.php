@@ -19,20 +19,22 @@ class WorkRoom extends Model
 
     public function project()
     {
-        return $this->hasMany(
-            'App\Models\Sercurity\Project',
-        );
+        return $this->hasMany('App\Models\Sercurity\Project', 'work_room_id');
+    }
 
-        // return $this->hasManyThrough(
-        //     'App\Models\Sercurity\MemberProject',
-        //     'App\Models\Sercurity\Project',
-        //     // 'work_room_id',
-        //     // 'project_id',
-        //     // 'id'
-        // );
-        // ->where('work_room.id', 'project.project_id');
-        // ->join('project', 'work_room.id', '=', 'project.project_id');
-        // ->select('work_room.*', 'project.*');
-        // ->join('member', 'member.id', '=', 'MemberProject.member_id');
+    public function member()
+    {
+        return $this->hasManyThrough(
+            'App\Models\Sercurity\MemberProject',
+            'App\Models\Sercurity\Project',
+            'work_room_id',
+            'project_id',
+            'id'
+        )
+        ->join('member', 'member.id', '=', 'member_project.member_id')
+        ->join('company', 'company.id', '=', 'member.company_id')
+        ->select('project.work_room_id', 'project.id as project_id', 'member_project.member_id', 'member.name as member_name', 'member.company_id', 'company.name as company_name');
+        // ->where('work_room.id', 'project.id');
+        // 'project.work_room_id', 'project.id'
     }
 }

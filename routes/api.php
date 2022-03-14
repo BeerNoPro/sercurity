@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Sercurity\HomeController;
 use App\Http\Controllers\Sercurity\CarbinetController;
 use App\Http\Controllers\Sercurity\CompanyController;
 use App\Http\Controllers\Sercurity\DeviceController;
@@ -89,16 +90,16 @@ Route::prefix('admin')->group(function () {
 
 Route::prefix('view')->group(function () {
     // Show lists content
-    Route::get('/home/{id?}', [ShowListController::class, 'index']);
+    Route::get('/home/{id?}', [HomeController::class, 'index']);
 
     // Show lists content table company and work room
-    Route::get('/company-workroom/{name}/{id}', [ShowListController::class, 'companyAndWorkRoom']);
+    Route::get('/company-workroom/{name}/{id}', [HomeController::class, 'companyAndWorkRoom']);
 
     // Show lists content member detail
-    Route::get('/member/{id}', [ShowListController::class, 'member']);
+    Route::get('/member/{id}', [HomeController::class, 'member']);
 
     // Search name company get list content
-    Route::get('/search/{name}', [ShowListController::class, 'search']);
+    Route::get('/search/{name}', [HomeController::class, 'search']);
 });
 
 
