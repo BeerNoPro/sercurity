@@ -89,7 +89,7 @@ Route::prefix('admin')->group(function () {
 
 Route::prefix('view')->group(function () {
     // Show lists content
-    Route::get('/home/{id?}', [ShowListController::class, 'home']);
+    Route::get('/home/{id?}', [ShowListController::class, 'index']);
 
     // Show lists content table company and work room
     Route::get('/company-workroom/{name}/{id}', [ShowListController::class, 'companyAndWorkRoom']);
