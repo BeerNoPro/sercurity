@@ -28,25 +28,25 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('admin')->group(function () {
     // List route company
     Route::resource('/company', CompanyController::class);
-    Route::post('/company/{id}', [CompanyController::class, 'update']);
+    Route::put('/company/{id}', [CompanyController::class, 'update']);
     Route::get('/company-search/{name}', [CompanyController::class, 'search']);
 
     // List route work room
     Route::resource('/work-room', WorkRoomController::class);
-    Route::post('/work-room/{id}', [WorkRoomController::class, 'update']);
+    Route::put('/work-room/{id}', [WorkRoomController::class, 'update']);
     Route::get('/work-room-search/{name}', [WorkRoomController::class, 'search']);
     
     // List route member
     Route::resource('/member', MemberController::class);
     Route::get('/member-foreign/{table}', [MemberController::class, 'showForeignKey']);
     Route::get('/member-edit/{id}/{company_id?}', [MemberController::class, 'edit']);
-    Route::post('/member/{id}', [MemberController::class, 'update']);
+    Route::put('/member/{id}', [MemberController::class, 'update']);
     Route::get('/member-search/{name}', [MemberController::class, 'search']);
     
     // List route project
     Route::resource('/project', ProjectController::class);
     Route::get('/project-edit/{id}/{company_id?}/{work_room_id?}', [ProjectController::class, 'edit']);
-    Route::post('/project/{id}', [ProjectController::class, 'update']);
+    Route::put('/project/{id}', [ProjectController::class, 'update']);
     Route::get('/project-search/{name}', [ProjectController::class, 'search']);
     Route::get('/project-foreign/{table}', [ProjectController::class, 'showForeignKey']);
     
@@ -75,14 +75,14 @@ Route::prefix('admin')->group(function () {
     // List route device
     Route::resource('/device', DeviceController::class);
     Route::get('/device-edit/{id}/{member_id?}', [DeviceController::class, 'edit']);
-    Route::post('/device/{id}', [DeviceController::class, 'update']);
+    Route::put('/device/{id}', [DeviceController::class, 'update']);
     Route::get('/device-foreign/{table}', [DeviceController::class, 'showForeignKey']);
     Route::get('/device-search/{name}', [DeviceController::class, 'search'])->where('name', '(.*)');
 
     // List route carbinet
     Route::resource('/carbinet', CarbinetController::class);
     Route::get('/carbinet-edit/{id}/{work_room_id?}/{member_id?}', [CarbinetController::class, 'edit']);
-    Route::post('/carbinet/{id}', [CarbinetController::class, 'update']);
+    Route::put('/carbinet/{id}', [CarbinetController::class, 'update']);
     Route::get('/carbinet-foreign/{table}', [CarbinetController::class, 'showForeignKey']);
     Route::get('/carbinet-search/{name}', [CarbinetController::class, 'search']);
 });
@@ -92,11 +92,8 @@ Route::prefix('view')->group(function () {
     // Show lists content
     Route::get('/home/{id?}', [HomeController::class, 'index']);
 
-    // Show lists content table company and work room
-    Route::get('/company-workroom/{name}/{id}', [HomeController::class, 'companyAndWorkRoom']);
-
     // Show lists content member detail
-    Route::get('/member/{id}', [HomeController::class, 'member']);
+    Route::get('/member/{id}', [HomeController::class, 'showMember']);
 
     // Search name company get list content
     Route::get('/search/{name}', [HomeController::class, 'search']);

@@ -47,4 +47,21 @@ class HomeController extends Controller
             }
         }
     }
+
+    public function showMember($id)
+    {
+        $data = $this->homeRepository->member($id);
+        if ($data) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Data lists content.',
+                'data' => $data,
+            ]);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Data not found.'
+            ]);
+        }
+    }
 }

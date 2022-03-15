@@ -34,7 +34,5 @@ class WorkRoom extends Model
         ->join('member', 'member.id', '=', 'member_project.member_id')
         ->join('company', 'company.id', '=', 'member.company_id')
         ->select('project.work_room_id', 'project.id as project_id', 'member_project.member_id', 'member.name as member_name', 'member.company_id', 'company.name as company_name');
-        // ->where('work_room.id', 'project.id');
-        // 'project.work_room_id', 'project.id'
     }
 }

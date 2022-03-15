@@ -3,6 +3,7 @@
 namespace App\Http\Requests\SecurityRequest;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class MemberRequest extends FormRequest
 {
@@ -23,7 +24,7 @@ class MemberRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $rules = [
             'name' => 'required|unique:member|min:4|max:255',
             'email' => 'required|email|unique:member|max:255',
             'address' => 'required|min:4|max:255',
@@ -32,5 +33,17 @@ class MemberRequest extends FormRequest
             'date_join_company' => 'required',
             'company_id' => 'required',
         ];
+
+        // Handle when update not unique
+        if (in_array($this->method(), ['PUT', 'PATCH'])) {
+            $data = $this->route()->parameter('member');
+            $rules = [
+                'name' => 'required|min:4|max:255',
+                'email' => 'required|email|max:255',
+                Rule::unique('member')->ignore($data),
+            ];
+        }
+
+        return $rules;
     }
 }

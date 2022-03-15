@@ -3,6 +3,7 @@
 namespace App\Http\Requests\SecurityRequest;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class DeviceRequest extends FormRequest
 {
@@ -23,12 +24,24 @@ class DeviceRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $rules = [
             'ip_address' => 'required',
             'user_login' => 'required|unique:device',
             'version_virus' => 'required',
             'member_id' => 'required|unique:device',
         ];
+
+        // Handle when update not unique
+        if (in_array($this->method(), ['PUT', 'PATCH'])) {
+            $data = $this->route()->parameter('device');
+            $rules = [
+                'user_login' => 'required|max:255',
+                'member_id' => 'required',
+                Rule::unique('device')->ignore($data),
+            ];
+        }
+
+        return $rules;
     }
 
     public function messages()
