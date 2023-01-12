@@ -1,0 +1,140 @@
+/* Start common */
+.hover-text-click:hover {
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
+    background-color: #ccc;
+}
+
+.sidebar-color {
+    background-color: white;
+    border-radius: 6px;
+}
+
+table .btn-edit:hover {
+    background-color: yellow;
+}
+
+table .btn-delete:hover {
+    background-color: red;
+}
+
+table .btn-show:hover {
+    background-color: blue;
+}
+
+table .btn-show:hover i {
+    color: white;
+}
+
+table .text-center:hover {
+    background-color: #ccc;
+}
+
+.hover:hover {
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.fs-14 {
+    font-size: 14px;
+}
+/* End common */
+
+/* Start header */
+.header-content {
+    height: 9.4vh;
+}
+
+.nav-item:hover {
+    background-color: #ccc;
+    border-radius: 6px;
+}
+
+.btn-search-box:hover {
+    background-color: blue;
+    border-radius: 6px;
+}
+
+.input-search {
+    position: relative;
+}
+
+.result-search {
+    position: absolute;
+    background-color: #212529;
+    color: white;
+    top: 80%;
+    list-style-type: none;
+    padding: 12px 0px;
+}
+
+.result-search li {
+    padding: 8px 28px;
+}
+
+.result-search li:hover {
+    background-color: #fff;
+}
+/* End header */
+
+/* Start sidebar */
+.sidebar-color a {
+    color: black;
+}
+/* End sidebar */
+
+/* Start content */
+.row-content {
+    height: 90.6vh;
+}
+
+.table-show-detail-hr {
+    border: 1px solid #ccc;
+}
+
+.scroll-content {
+    position: fixed;
+    overflow-y: scroll;
+    top: 10%;
+    right: 0;
+    height: 90.6vh;
+}
+
+/* End content */
+
+/* Css icon completed */
+#icon-loading {
+    position: absolute;
+    right: 50%;
+    top: 50%;
+    display: inline-grid;
+}
+
+.icon-loading {
+    position: absolute;
+    top: -30px;
+    right: 22px;
+}
+
+@media screen and (min-width: 1200px) {
+    .header-content {
+        height: 7.4vh;
+    }
+
+    .row-content {
+        height: 92.6vh;
+    }
+}
+
+/* @media only screen and (min-width: 1600px) {
+    .header-content {
+        height: 7.4vh;
+    }
+
+    .row-content {
+        height: 92.6vh;
+    }
+} */

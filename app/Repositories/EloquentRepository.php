@@ -61,5 +61,10 @@ abstract class EloquentRepository implements RepositoryInterface
         $data = DB::table($name)->select($name . '.id', $name . '.name')->get();
         return $data ? $data : false;
     }
-    
+
+    public function destroy($id)
+    {
+        $data = $this->model->find($id)->delete();
+        return $data ? $data : false;
+    }
 }

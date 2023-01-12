@@ -8,6 +8,6 @@ class CompanyRepository extends EloquentRepository
 {
     public function getModel()
     {
-        return Company::class;
+        return Company::class; 
     }
 }

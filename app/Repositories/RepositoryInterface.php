@@ -22,4 +22,7 @@ interface RepositoryInterface
     // Get content foreign key
     public function showForeignKey($name);
 
+    // delete data
+    public function destroy($id);
+
 }
